@@ -14,7 +14,7 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-const addCard = async (name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, imageType_id, base64String) => {
+const addCard = async (name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images) => {
   const post = 'insert into `card` values (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), ?, UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?);';
   const cardId = uuidv4();
   const values = [cardId, name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, dateFormat(new Date()), dateFormat(new Date())];
@@ -32,13 +32,14 @@ const addCard = async (name, code, rarity_id, opus_id, cost, cardType_id, exburs
   });
 
   // adding job
-  jobs_id.split(" ").forEach(async (job) => {
-    const jobQuery = 'insert into `card_job` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
-    const jobValues = [cardId, job];
-    const jobResult = await pool.query(jobQuery, jobValues);
-    console.log('job added!');
-    console.log(jobResult);
-  });
+  if (!jobs_id === "")
+    jobs_id.split(" ").forEach(async (job) => {
+      const jobQuery = 'insert into `card_job` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
+      const jobValues = [cardId, job];
+      const jobResult = await pool.query(jobQuery, jobValues);
+      console.log('job added!');
+      console.log(jobResult);
+    });
 
   // adding category
   categories_id.split(" ").forEach(async (category) => {
@@ -52,20 +53,24 @@ const addCard = async (name, code, rarity_id, opus_id, cost, cardType_id, exburs
   // Adding image
 
   const imageTypesNames = await getImageType();
-  const imageType = imageTypesNames.find(r => r.id == imageType_id);
-
-  let base64Image = base64String.split(';base64,').pop(); // Remove header
   const dir = "image/card/"
-  const path = `${dir}${cardId}_${imageType.name}.jpeg`;
-  fs.writeFile(path, base64Image, { encoding: 'base64' }, function (err) {
-    console.log('File created');
-  });
 
-  const imageQuery = 'insert into `image` values (UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?), ?);';
-  const imageValues = [uuidv4(), cardId, imageType_id, path];
-  const imageResult = await pool.query(imageQuery, imageValues);
-  console.log('image added!');
-  console.log(imageResult);
+  images.array.forEach(async (i, x) => {
+    const imageType = imageTypesNames.find(r => r.id == i.imageType_id);
+    let base64Image = i.base64String.split(';base64,').pop(); // Remove header
+    const path = `${dir}${cardId}_${imageType.name}_${x}.jpeg`;
+
+    fs.writeFile(path, base64Image, { encoding: 'base64' }, function (err) {
+      console.log('File created');
+    });
+
+    const imageQuery = 'insert into `image` values (UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?), ?);';
+    const imageValues = [uuidv4(), cardId, i.imageType_id, path];
+    const imageResult = await pool.query(imageQuery, imageValues);
+    console.log('image added!');
+    console.log(imageResult);
+
+  });
 
 };
 
@@ -88,9 +93,12 @@ const getRandomCard = async () => {
   const imageQuery = 'select imagetype.name as `ilustration`, src from image join imagetype on image.imageType_id = imagetype.id where image.card_id = UUID_TO_BIN(?);';
   const ImageValues = [cardResult[0].id];
   const [imageResult] = await pool.query(imageQuery, ImageValues);
-  console.log(imageResult);
 
-  const localPath = 'http://localhost:3000/'
+  let Path = '';
+  if (process.env.ENVIROMENT == 'development')
+    Path = 'http://localhost:3000/';
+  else if (process.env.ENVIROMENT == 'production')
+    Path = '';
 
   let randomCard = cardResult[0];
   randomCard.elements = elementResult.map(e => e.name);
@@ -98,7 +106,7 @@ const getRandomCard = async () => {
   randomCard.categories = categoryResult.map(c => c.name);
   randomCard.ilustrations = imageResult.map(i => {
     const obj = Object.assign({}, i);
-    obj.src = localPath + i.src;
+    obj.src = Path + i.src;
     return obj;
   });
   console.log(randomCard);

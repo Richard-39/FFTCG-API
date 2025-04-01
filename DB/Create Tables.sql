@@ -3,43 +3,43 @@
 create table rarity
 (
 	id binary(16) primary key,
-    name varchar(100) not null
+    name varchar(100) not null unique
 );
 
 create table opus
 (
 	id binary(16) primary key,
-    name varchar(100) not null
+    name varchar(100) not null unique
 );
 
 create table cardType
 (
 	id binary(16) primary key,
-    name varchar(100) not null
+    name varchar(100) not null unique
 );
 
 create table element
 (
 	id binary(16) primary key,
-    name varchar(100) not null
+    name varchar(100) not null unique
 );
 
 create table job
 (
 	id binary(16) primary key,
-    name varchar(100) not null
+    name varchar(100) not null unique
 );
 
 create table category
 (
 	id binary(16) primary key,
-    name varchar(100) not null
+    name varchar(100) not null unique
 );
 
 create table imageType
 (
 	id binary(16) primary key,
-    name varchar(100) not null
+    name varchar(100) not null unique
 );
 
 -- seconds -- 
@@ -48,7 +48,7 @@ create table card
 (
 	id binary(16) primary key,
     name varchar(100),
-    code varchar(20),
+    code varchar(20) unique,
     rarity_id binary(16),
     foreign key (rarity_id) references rarity (id),
     opus_id binary(16),

@@ -1,0 +1,16 @@
+{
+  "name":"card example 2", 
+  "code":"code-002",
+  "rarity_id":"b82b3a69-0aa0-11f0-abac-309c2314b3fd", 
+  "opus_id":"9ad5bd86-0aa5-11f0-abac-309c2314b3fd", 
+  "cost":1, 
+  "cardType_id":"f962eabb-0aa5-11f0-abac-309c2314b3fd", 
+  "exburst":false, 
+  "multiplayable":false, 
+  "power":1000, 
+  "abilities":"habilitie example habilitie example 2",
+  "elements_id":"836a1c21-0aa6-11f0-abac-309c2314b3fd 836a20d7-0aa6-11f0-abac-309c2314b3fd",
+  "jobs_id":"47ba1c26-0aa7-11f0-abac-309c2314b3fd 47ba20b3-0aa7-11f0-abac-309c2314b3fd",
+  "categories_id":"38158bf6-0c16-11f0-abac-309c2314b3fd 3815c6df-0c16-11f0-abac-309c2314b3fd",
+  "images": {"array": [{"imageType_id":"05940ee7-0aa8-11f0-abac-309c2314b3fd", "base64String":"data:image/jpeg;base64,/9j/4AdsdX1B..."}, {"imageType_id":"05940ee7-0aa8-11f0-abac-309c2314b3fd", "base64String":"data:image/jpeg;base64,/9j/4AdsdX1B..."}]}
+}

@@ -22,8 +22,8 @@ app.post("/opus", async (req, res) => {
 
 
 app.post("/card", async (req, res) => {
-    const {name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, imageType_id, base64String} = req.body;
-    await addCard(name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, imageType_id, base64String);
+    const {name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images} = req.body;
+    await addCard(name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images);
     res.send("Card Added !");
 });
 

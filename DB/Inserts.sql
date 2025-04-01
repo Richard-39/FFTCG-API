@@ -10,7 +10,6 @@ insert into rarity (id, name) values
 (UUID_TO_BIN(UUID()), 'Boss');
 select BIN_TO_UUID(rarity.id) as "id", name from rarity;
 
--- FALTAN DATOS --
 insert into opus (id, name) values 
 (UUID_TO_BIN(UUID()), 'Opus I'),
 (UUID_TO_BIN(UUID()), 'Opus II'),
@@ -26,18 +25,18 @@ insert into opus (id, name) values
 (UUID_TO_BIN(UUID()), 'Opus XII'),
 (UUID_TO_BIN(UUID()), 'Opus XIII'),
 (UUID_TO_BIN(UUID()), 'Opus XIV'),
-(UUID_TO_BIN(UUID()), 'Opus XV'),
-(UUID_TO_BIN(UUID()), 'Opus XVI'),
-(UUID_TO_BIN(UUID()), 'Opus XVII'),
-(UUID_TO_BIN(UUID()), 'Opus XVIII'),
-(UUID_TO_BIN(UUID()), 'Opus XIX'),
-(UUID_TO_BIN(UUID()), 'Opus XX'),
-(UUID_TO_BIN(UUID()), 'Opus XXI'),
-(UUID_TO_BIN(UUID()), 'Opus XXII'),
-(UUID_TO_BIN(UUID()), 'Opus XXIII'),
-(UUID_TO_BIN(UUID()), 'Opus XXIV'),
-(UUID_TO_BIN(UUID()), 'Opus XXV'),
-(UUID_TO_BIN(UUID()), 'Legacy');
+(UUID_TO_BIN(UUID()), 'Opus XV (Crystal Dominion)'),
+(UUID_TO_BIN(UUID()), 'Opus XVI (Emissaries of Light)'),
+(UUID_TO_BIN(UUID()), 'Opus XVII (Rebellion\'s Call)'),
+(UUID_TO_BIN(UUID()), 'Opus XVIII (Resurgence of Power)'),
+(UUID_TO_BIN(UUID()), 'Opus XIX (From Nightmares)'),
+(UUID_TO_BIN(UUID()), 'Opus XX (Dawn of Heroes)'),
+(UUID_TO_BIN(UUID()), 'Opus XXI (Beyond Destiny)'),
+(UUID_TO_BIN(UUID()), 'Opus XXII (Hidden Hope)'),
+(UUID_TO_BIN(UUID()), 'Opus XXIII (Hidden Trials)'),
+(UUID_TO_BIN(UUID()), 'Opus XXIV (Hidden Legends)'),
+(UUID_TO_BIN(UUID()), 'Opus XXV (Tears of the Planet)'),
+(UUID_TO_BIN(UUID()), 'Legacy Collection');
 select BIN_TO_UUID(opus.id) as "id", name from opus;
 
 insert into cardType (id, name) values
@@ -63,16 +62,115 @@ insert into job (id, name) values
 (UUID_TO_BIN(UUID()), 'AVALANCHE Operative'),
 (UUID_TO_BIN(UUID()), 'Abhorrent One'),
 (UUID_TO_BIN(UUID()), 'Acting Imperial Viceroy'),
-(UUID_TO_BIN(UUID()), 'Actress of Wohlstok');
+(UUID_TO_BIN(UUID()), 'Actress of Wohlstok'),
+(UUID_TO_BIN(UUID()), 'Mobile Artillery'),
+(UUID_TO_BIN(UUID()), 'Warrior'),
+(UUID_TO_BIN(UUID()), 'Mythril Musketeer'),
+(UUID_TO_BIN(UUID()), 'Standard Unit'),
+(UUID_TO_BIN(UUID()), 'Merc'),
+(UUID_TO_BIN(UUID()), 'SOLDIER'),
+(UUID_TO_BIN(UUID()), 'Salamander'),
+(UUID_TO_BIN(UUID()), 'Artificial Life'),
+(UUID_TO_BIN(UUID()), 'Archfiend'),
+(UUID_TO_BIN(UUID()), 'Cat'),
+(UUID_TO_BIN(UUID()), 'Necron'),
+(UUID_TO_BIN(UUID()), 'Faction Leader'),
+(UUID_TO_BIN(UUID()), 'Chimera'),
+(UUID_TO_BIN(UUID()), 'King'),
+(UUID_TO_BIN(UUID()), 'Bard'),
+(UUID_TO_BIN(UUID()), 'Instructor'),
+(UUID_TO_BIN(UUID()), 'Dark Knight'),
+(UUID_TO_BIN(UUID()), 'Scientist'),
+(UUID_TO_BIN(UUID()), 'Mevyn'),
+(UUID_TO_BIN(UUID()), 'Captain'),
+(UUID_TO_BIN(UUID()), 'Mysterious Woman'),
+(UUID_TO_BIN(UUID()), 'Gullwings'),
+(UUID_TO_BIN(UUID()), 'Black Mage'),
+(UUID_TO_BIN(UUID()), 'Songstress'),
+(UUID_TO_BIN(UUID()), 'Summoner'),
+(UUID_TO_BIN(UUID()), 'Ancient'),
+(UUID_TO_BIN(UUID()), 'Goobbue'),
+(UUID_TO_BIN(UUID()), 'Tantalus Member'),
+(UUID_TO_BIN(UUID()), 'Thief'),
+(UUID_TO_BIN(UUID()), 'Pilot'),
+(UUID_TO_BIN(UUID()), 'Prince'),
+(UUID_TO_BIN(UUID()), 'Mandragora'),
+(UUID_TO_BIN(UUID()), 'Ninja'),
+(UUID_TO_BIN(UUID()), 'Princess'),
+(UUID_TO_BIN(UUID()), 'Monk'),
+(UUID_TO_BIN(UUID()), 'Gunslinger'),
+(UUID_TO_BIN(UUID()), 'Rat'),
+(UUID_TO_BIN(UUID()), 'Warrior of Light'),
+(UUID_TO_BIN(UUID()), 'War Machine'),
+(UUID_TO_BIN(UUID()), 'Doll'),
+(UUID_TO_BIN(UUID()), 'Earthshaker'),
+(UUID_TO_BIN(UUID()), 'Outlaw'),
+(UUID_TO_BIN(UUID()), 'Engineer'),
+(UUID_TO_BIN(UUID()), 'Genome'),
+(UUID_TO_BIN(UUID()), 'Fighter'),
+(UUID_TO_BIN(UUID()), 'Praetor'),
+(UUID_TO_BIN(UUID()), 'Member of the Turks'),
+(UUID_TO_BIN(UUID()), 'Corneo\'s Pet'),
+(UUID_TO_BIN(UUID()), 'Queen'),
+(UUID_TO_BIN(UUID()), 'Kraken'),
+(UUID_TO_BIN(UUID()), 'Wraith'),
+(UUID_TO_BIN(UUID()), 'Paladin'),
+(UUID_TO_BIN(UUID()), 'Guardian'),
+(UUID_TO_BIN(UUID()), 'Blitzballer'),
+(UUID_TO_BIN(UUID()), 'Research Chief'),
+(UUID_TO_BIN(UUID()), 'Owner'),
+(UUID_TO_BIN(UUID()), 'White Mage'),
+(UUID_TO_BIN(UUID()), 'Vesna Krasna'),
+(UUID_TO_BIN(UUID()), 'Witch'),
+(UUID_TO_BIN(UUID()), 'Lunarian'),
+(UUID_TO_BIN(UUID()), 'Descendant of the Zilart'),
+(UUID_TO_BIN(UUID()), 'Illusion'),
+(UUID_TO_BIN(UUID()), 'Emperor'),
+(UUID_TO_BIN(UUID()), 'Crimson Archer'),
+(UUID_TO_BIN(UUID()), 'Dragoon'),
+(UUID_TO_BIN(UUID()), 'War Hero'),
+(UUID_TO_BIN(UUID()), 'Grand Général'),
+(UUID_TO_BIN(UUID()), 'Epopt'),
+(UUID_TO_BIN(UUID()), 'Warlock');
 select BIN_TO_UUID(job.id) as "id", name from job;
 
--- FALTAN DATOS --
 insert into category (id, name) values
 (UUID_TO_BIN(UUID()), 'I'),
 (UUID_TO_BIN(UUID()), 'II'),
 (UUID_TO_BIN(UUID()), 'III'),
 (UUID_TO_BIN(UUID()), 'IV'),
-(UUID_TO_BIN(UUID()), 'V');
+(UUID_TO_BIN(UUID()), 'V'),
+(UUID_TO_BIN(UUID()), 'VI'),
+(UUID_TO_BIN(UUID()), 'VII'),
+(UUID_TO_BIN(UUID()), 'VIII'),
+(UUID_TO_BIN(UUID()), 'IX'),
+(UUID_TO_BIN(UUID()), 'X'),
+(UUID_TO_BIN(UUID()), 'XI'),
+(UUID_TO_BIN(UUID()), 'XII'),
+(UUID_TO_BIN(UUID()), 'XIII'),
+(UUID_TO_BIN(UUID()), 'XIV'),
+(UUID_TO_BIN(UUID()), 'XV'),
+(UUID_TO_BIN(UUID()), 'XVI'),
+(UUID_TO_BIN(UUID()), 'Anniversary'),
+(UUID_TO_BIN(UUID()), 'Crystal Hunt'),
+(UUID_TO_BIN(UUID()), 'DFF'),
+(UUID_TO_BIN(UUID()), 'FFBE'),
+(UUID_TO_BIN(UUID()), 'FFCC'),
+(UUID_TO_BIN(UUID()), 'FFEX'),
+(UUID_TO_BIN(UUID()), 'FFL'),
+(UUID_TO_BIN(UUID()), 'FFRK'),
+(UUID_TO_BIN(UUID()), 'FFT'),
+(UUID_TO_BIN(UUID()), 'FFTA'),
+(UUID_TO_BIN(UUID()), 'FFTA2'),
+(UUID_TO_BIN(UUID()), 'LOV'),
+(UUID_TO_BIN(UUID()), 'MOBIUS'),
+(UUID_TO_BIN(UUID()), 'MQ'),
+(UUID_TO_BIN(UUID()), 'PICTLOGICA'),
+(UUID_TO_BIN(UUID()), 'SOPFFO'),
+(UUID_TO_BIN(UUID()), 'Special'),
+(UUID_TO_BIN(UUID()), 'THEATRHYTHM'),
+(UUID_TO_BIN(UUID()), 'Type-0'),
+(UUID_TO_BIN(UUID()), 'WOFF');
 select BIN_TO_UUID(category.id) as "id", name from category;
 
 insert into imageType (id, name) values
@@ -81,7 +179,8 @@ insert into imageType (id, name) values
 (UUID_TO_BIN(UUID()), 'Full Art');
 select BIN_TO_UUID(imageType.id) as "id", name from imageType;
 
--- card insert --
+/*
+-- card example insert --
 insert into card (id, name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, create_at, update_at) values
 (UUID_TO_BIN(UUID()), 
 'card example', 
@@ -102,9 +201,7 @@ from card
 join rarity on card.rarity_id = rarity.id
 join opus on card.opus_id = opus.id
 join cardType on card.cardType_id = cardType.id;
-
-	
-
+*/
 
 /* 
 update `product` 
