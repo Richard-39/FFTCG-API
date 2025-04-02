@@ -12,7 +12,7 @@ create table opus
     name varchar(100) not null unique
 );
 
-create table cardType
+create table card_type
 (
 	id binary(16) primary key,
     name varchar(100) not null unique
@@ -36,7 +36,7 @@ create table category
     name varchar(100) not null unique
 );
 
-create table imageType
+create table image_type
 (
 	id binary(16) primary key,
     name varchar(100) not null unique
@@ -54,8 +54,8 @@ create table card
     opus_id binary(16),
     foreign key (opus_id) references opus (id),
     cost int,
-    cardType_id binary(16),
-    foreign key (cardType_id) references cardtype (id),
+    card_type_id binary(16),
+    foreign key (card_type_id) references card_type (id),
     exburst bool,
     multiplayable bool,
     power int,
@@ -98,7 +98,7 @@ create table image
 	id binary(16) primary key,
     card_id binary(16),
     foreign key (card_id) references card (id),
-    imageType_id binary(16),
-    foreign key (imageType_id) references imageType (id),
+    image_type_id binary(16),
+    foreign key (image_type_id) references image_type (id),
     src mediumtext
 );

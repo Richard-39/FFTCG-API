@@ -22,12 +22,12 @@ app.post("/opus", async (req, res) => {
 
 
 app.post("/card", async (req, res) => {
-    const {name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images} = req.body;
-    await addCard(name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images);
+    const {name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images} = req.body;
+    await addCard(name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images);
     res.send("Card Added !");
 });
 
-app.get("/imageType", async (req, res) => {
+app.get("/image_type", async (req, res) => {
     const imageType = await getImageType();
     res.json(imageType);
 });

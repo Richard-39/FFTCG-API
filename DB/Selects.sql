@@ -5,7 +5,7 @@ select BIN_TO_UUID(rarity.id) as "id", name from rarity;
 select BIN_TO_UUID(opus.id) as "id", name from opus;
 
 -- Card Type --
-select BIN_TO_UUID(cardType.id) as "id", name from cardType;
+select BIN_TO_UUID(card_type.id) as "id", name from card_type;
 
 -- Element --
 select BIN_TO_UUID(element.id) as "id", name from element;
@@ -17,14 +17,14 @@ select BIN_TO_UUID(job.id) as "id", name from job;
 select BIN_TO_UUID(category.id) as "id", name from category;
 
 -- Image Type --
-select BIN_TO_UUID(imageType.id) as "id", name from imageType;
+select BIN_TO_UUID(image_type.id) as "id", name from image_type;
 
 -- Card --
-select BIN_TO_UUID(card.id) as 'id', card.name, code, rarity.name as 'rarity', opus.name as 'opus', cost, cardtype.name as 'card type', exburst, multiplayable, power, abilities, create_at, update_at
+select BIN_TO_UUID(card.id) as 'id', card.name, code, rarity.name as 'rarity', opus.name as 'opus', cost, card_type.name as 'card type', exburst, multiplayable, power, abilities, create_at, update_at
 from card 
 join rarity on card.rarity_id = rarity.id
 join opus on card.opus_id = opus.id
-join cardType on card.cardType_id = cardType.id;
+join card_type on card.card_type_id = card_type.id;
 
 -- Card Element --
 select BIN_TO_UUID(card_element.card_id), card.code as 'code', element.name as 'element' from card_element
@@ -41,8 +41,19 @@ select BIN_TO_UUID(card_category.card_id), card.code as 'code', category.name as
 join card on card_category.card_id = card.id
 join category on card_category.category_id = category.id;
 
+select BIN_TO_UUID(card_id), src from image;
+
 SELECT * FROM card
 ORDER BY RAND()
 LIMIT 1;
 
-select * from image;
+-- export to sql insert
+select concat("UUID_TO_BIN('", BIN_TO_UUID(card.id), "'") as 'id', name, code, concat("UUID_TO_BIN('", BIN_TO_UUID(rarity_id), "'") as 'rarity_id', concat("UUID_TO_BIN('", BIN_TO_UUID(opus_id), "'") as 'opus_id', cost, concat("UUID_TO_BIN('", BIN_TO_UUID(card_type_id), "'") as 'cardType_id', exburst, multiplayable, power, abilities, create_at, update_at
+from card;
+
+SHOW VARIABLES LIKE 'max_connections';
+SHOW STATUS WHERE `variable_name` = 'Threads_connected';
+
+select 1;
+
+do sleep(5);

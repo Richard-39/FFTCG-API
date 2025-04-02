@@ -5,77 +5,79 @@ const { dateFormat } = require('./extension.js');
 const fs = require('fs');
 
 const pool = mysql.createPool({
+  connectionLimit: 5,
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
+  port: process.env.DB_PORT,
   queueLimit: 0
 });
 
-const addCard = async (name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images) => {
+const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images) => {
+  
   const post = 'insert into `card` values (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), ?, UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?);';
   const cardId = uuidv4();
-  const values = [cardId, name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, dateFormat(new Date()), dateFormat(new Date())];
+  const values = [cardId, name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, dateFormat(new Date()), dateFormat(new Date())];
   const result = await pool.query(post, values);
   console.log('Card added!');
-  console.log(result);
 
   // Adding element
-  elements_id.split(" ").forEach(async (element) => {
+  console.log("elements: " + elements_id);
+  console.log("length: " + elements_id.split(" ").length);
+  const arrayOfElements = elements_id.split(" ");
+  for (const element of arrayOfElements){
     const elementQuery = 'insert into `card_element` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
     const elementValues = [cardId, element];
     const elementResult = await pool.query(elementQuery, elementValues);
     console.log('element added!');
-    console.log(elementResult);
-  });
+  }
 
   // adding job
-  if (!jobs_id === "")
-    jobs_id.split(" ").forEach(async (job) => {
-      const jobQuery = 'insert into `card_job` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
-      const jobValues = [cardId, job];
-      const jobResult = await pool.query(jobQuery, jobValues);
-      console.log('job added!');
-      console.log(jobResult);
-    });
+  console.log("jobs: " + jobs_id.array);
+  console.log("length: " + jobs_id.array.length);
+  for(const job of jobs_id.array){
+    const jobQuery = 'insert into `card_job` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
+    const jobValues = [cardId, job];
+    const jobResult = await pool.query(jobQuery, jobValues);
+    console.log('job added!');
+  }
 
   // adding category
-  categories_id.split(" ").forEach(async (category) => {
+  console.log("categories: " + categories_id);
+  console.log("length: " + categories_id.split(" ").length);
+  const arrayOfCategories = categories_id.split(" ");
+  for (const category of arrayOfCategories){
     const categoryQuery = 'insert into `card_category` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
     const categoryValues = [cardId, category];
     const categoryResult = await pool.query(categoryQuery, categoryValues);
     console.log('category added!');
-    console.log(categoryResult);
-  });
+  }
 
   // Adding image
-
-  const imageTypesNames = await getImageType();
   const dir = "image/card/"
+  const imagesTypesNames = await getImageType();
 
-  images.array.forEach(async (i, x) => {
-    const imageType = imageTypesNames.find(r => r.id == i.imageType_id);
-    let base64Image = i.base64String.split(';base64,').pop(); // Remove header
-    const path = `${dir}${cardId}_${imageType.name}_${x}.jpeg`;
+  for (const image of images.array){
+    const imageType = imagesTypesNames.find(r => r.id == image.image_type_id);
+    const base64Image = image.base64String.split(';base64,').pop(); // Remove header
+    const path = `${dir}${code}_${imageType.name}.jpeg`;
 
     fs.writeFile(path, base64Image, { encoding: 'base64' }, function (err) {
-      console.log('File created');
+      console.log('Image created');
     });
 
     const imageQuery = 'insert into `image` values (UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?), ?);';
-    const imageValues = [uuidv4(), cardId, i.imageType_id, path];
+    const imageValues = [uuidv4(), cardId, image.image_type_id, path];
     const imageResult = await pool.query(imageQuery, imageValues);
     console.log('image added!');
-    console.log(imageResult);
-
-  });
+  }
 
 };
 
 const getRandomCard = async () => {
-  const cardQuery = 'SELECT BIN_TO_UUID(card.id) as `id`, card.name, code, rarity.name as `rarity`, opus.name as `opus`, cost, cardtype.name as `card type`, exburst, multiplayable, power, abilities, create_at, update_at from card join rarity on card.rarity_id = rarity.id join opus on card.opus_id = opus.id join cardType on card.cardType_id = cardType.id ORDER BY RAND() LIMIT 1;';
+  const cardQuery = 'SELECT BIN_TO_UUID(card.id) as `id`, card.name, code, rarity.name as `rarity`, opus.name as `opus`, cost, card_type.name as `card type`, exburst, multiplayable, power, abilities, create_at, update_at from card join rarity on card.rarity_id = rarity.id join opus on card.opus_id = opus.id join card_type on card.card_type_id = card_type.id ORDER BY RAND() LIMIT 1;';
   const [cardResult] = await pool.query(cardQuery);
 
   const elementQuery = 'select element.name from card_element join element on card_element.element_id = element.id where card_element.card_id = UUID_TO_BIN(?);';
@@ -90,7 +92,7 @@ const getRandomCard = async () => {
   const categoryValues = [cardResult[0].id];
   const [categoryResult] = await pool.query(categoryQuery, categoryValues);
 
-  const imageQuery = 'select imagetype.name as `ilustration`, src from image join imagetype on image.imageType_id = imagetype.id where image.card_id = UUID_TO_BIN(?);';
+  const imageQuery = 'select image_type.name as `ilustration`, src from image join image_type on image.image_type_id = image_type.id where image.card_id = UUID_TO_BIN(?);';
   const ImageValues = [cardResult[0].id];
   const [imageResult] = await pool.query(imageQuery, ImageValues);
 
@@ -124,7 +126,7 @@ const addOpus = async (name) => {
 };
 
 const getImageType = async () => {
-  const imageTypeQuery = 'select BIN_TO_UUID(imageType.id) as "id", name from imageType;';
+  const imageTypeQuery = 'select BIN_TO_UUID(image_type.id) as "id", name from image_type;';
   const [imageTypeResult, imageTypefields] = await pool.query(imageTypeQuery);
   console.log(imageTypefields);
   console.log(imageTypeResult);

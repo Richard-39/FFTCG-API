@@ -1,1 +1,5 @@
+/*init with enviroments values*/
 node --env-file-if-exists=.env index.js
+
+/*init with local enviroments values*/
+node --env-file-if-exists=.env.development.local index.js

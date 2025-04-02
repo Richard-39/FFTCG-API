@@ -1,4 +1,4 @@
--- Basic insert --
+-- Basic insert, for new db and data --
 
 insert into rarity (id, name) values 
 (UUID_TO_BIN(UUID()), 'Legend'),
@@ -39,12 +39,12 @@ insert into opus (id, name) values
 (UUID_TO_BIN(UUID()), 'Legacy Collection');
 select BIN_TO_UUID(opus.id) as "id", name from opus;
 
-insert into cardType (id, name) values
+insert into card_type (id, name) values
 (UUID_TO_BIN(UUID()), 'Forward'),
 (UUID_TO_BIN(UUID()), 'Monster'),
 (UUID_TO_BIN(UUID()), 'Summon'),
 (UUID_TO_BIN(UUID()), 'Backup');
-select BIN_TO_UUID(cardType.id) as "id", name from cardType;
+select BIN_TO_UUID(card_type.id) as "id", name from card_type;
 
 insert into element (id, name) values
 (UUID_TO_BIN(UUID()), 'Fire'),
@@ -173,15 +173,17 @@ insert into category (id, name) values
 (UUID_TO_BIN(UUID()), 'WOFF');
 select BIN_TO_UUID(category.id) as "id", name from category;
 
-insert into imageType (id, name) values
+insert into image_type (id, name) values
 (UUID_TO_BIN(UUID()), 'Regular'),
 (UUID_TO_BIN(UUID()), 'Foil'),
 (UUID_TO_BIN(UUID()), 'Full Art');
-select BIN_TO_UUID(imageType.id) as "id", name from imageType;
+select BIN_TO_UUID(image_type.id) as "id", name from image_type;
+
+
 
 /*
 -- card example insert --
-insert into card (id, name, code, rarity_id, opus_id, cost, cardType_id, exburst, multiplayable, power, abilities, create_at, update_at) values
+insert into card (id, name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, create_at, update_at) values
 (UUID_TO_BIN(UUID()), 
 'card example', 
 'code-001', 
@@ -196,11 +198,11 @@ false,
 '2025-01-26 00:15:12',
 '2025-01-26 00:15:12'
 );
-select BIN_TO_UUID(card.id) as 'id', card.name, code, rarity.name as 'rarity', opus.name as 'opus', cost, cardtype.name as 'card type', exburst, multiplayable, power, abilities, create_at, update_at
+select BIN_TO_UUID(card.id) as 'id', card.name, code, rarity.name as 'rarity', opus.name as 'opus', cost, card_type.name as 'card type', exburst, multiplayable, power, abilities, create_at, update_at
 from card 
 join rarity on card.rarity_id = rarity.id
 join opus on card.opus_id = opus.id
-join cardType on card.cardType_id = cardType.id;
+join card_type on card.card_type_id = card_type.id;
 */
 
 /* 
