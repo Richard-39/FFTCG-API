@@ -210,3 +210,5 @@ update `product`
 set `name` = 'produto 3', `description` = 'descripion producto 3', `price` = 30000, `category_id` = UUID_TO_BIN('4ca04f05-ac58-11ef-b371-309c2314b3fd'), `isActive` = true, `modified_at` = '2024-12-03' 
 where `id` = UUID_TO_BIN('941c9289-648a-433d-87d4-6e9a40dc74ec');
 */
+
+-- update image set src = "image/card/c8b1a390-5b7a-42c2-9af5-37cace912168_FullArt_1.jpeg" where card_id = (UUID_TO_BIN('c8b1a390-5b7a-42c2-9af5-37cace912168'));

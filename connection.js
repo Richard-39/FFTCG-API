@@ -62,7 +62,7 @@ const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exbur
   for (const image of images.array){
     const imageType = imagesTypesNames.find(r => r.id == image.image_type_id);
     const base64Image = image.base64String.split(';base64,').pop(); // Remove header
-    const path = `${dir}${code}_${imageType.name}.jpeg`;
+    const path = `${dir}${code}_${imageType.name.replaceAll(' ', '')}.jpeg`;
 
     fs.writeFile(path, base64Image, { encoding: 'base64' }, function (err) {
       console.log('Image created');
@@ -100,7 +100,7 @@ const getRandomCard = async () => {
   if (process.env.ENVIROMENT == 'development')
     Path = 'http://localhost:3000/';
   else if (process.env.ENVIROMENT == 'production')
-    Path = '';
+    Path = 'https://fftcg-api.onrender.com';
 
   let randomCard = cardResult[0];
   randomCard.elements = elementResult.map(e => e.name);
