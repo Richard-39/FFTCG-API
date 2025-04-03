@@ -100,7 +100,7 @@ const getRandomCard = async () => {
   if (process.env.ENVIROMENT == 'development')
     Path = 'http://localhost:3000/';
   else if (process.env.ENVIROMENT == 'production')
-    Path = 'https://fftcg-api.onrender.com';
+    Path = 'https://fftcg-api.onrender.com/';
 
   let randomCard = cardResult[0];
   randomCard.elements = elementResult.map(e => e.name);
