@@ -16,7 +16,7 @@ const pool = mysql.createPool({
 });
 
 const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images) => {
-  
+
   const post = 'insert into `card` values (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), ?, UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?);';
   const cardId = uuidv4();
   const values = [cardId, name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, dateFormat(new Date()), dateFormat(new Date())];
@@ -27,7 +27,7 @@ const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exbur
   console.log("elements: " + elements_id);
   console.log("length: " + elements_id.split(" ").length);
   const arrayOfElements = elements_id.split(" ");
-  for (const element of arrayOfElements){
+  for (const element of arrayOfElements) {
     const elementQuery = 'insert into `card_element` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
     const elementValues = [cardId, element];
     const elementResult = await pool.query(elementQuery, elementValues);
@@ -37,7 +37,7 @@ const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exbur
   // adding job
   console.log("jobs: " + jobs_id.array);
   console.log("length: " + jobs_id.array.length);
-  for(const job of jobs_id.array){
+  for (const job of jobs_id.array) {
     const jobQuery = 'insert into `card_job` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
     const jobValues = [cardId, job];
     const jobResult = await pool.query(jobQuery, jobValues);
@@ -48,7 +48,7 @@ const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exbur
   console.log("categories: " + categories_id);
   console.log("length: " + categories_id.split(" ").length);
   const arrayOfCategories = categories_id.split(" ");
-  for (const category of arrayOfCategories){
+  for (const category of arrayOfCategories) {
     const categoryQuery = 'insert into `card_category` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
     const categoryValues = [cardId, category];
     const categoryResult = await pool.query(categoryQuery, categoryValues);
@@ -56,24 +56,8 @@ const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exbur
   }
 
   // Adding image
-  const dir = "image/card/"
-  const imagesTypesNames = await getImageType();
-
-  for (const image of images.array){
-    const imageType = imagesTypesNames.find(r => r.id == image.image_type_id);
-    const base64Image = image.base64String.split(';base64,').pop(); // Remove header
-    const path = `${dir}${code}_${imageType.name.replaceAll(' ', '')}.jpeg`;
-
-    fs.writeFile(path, base64Image, { encoding: 'base64' }, function (err) {
-      console.log('Image created');
-    });
-
-    const imageQuery = 'insert into `image` values (UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?), ?);';
-    const imageValues = [uuidv4(), cardId, image.image_type_id, path];
-    const imageResult = await pool.query(imageQuery, imageValues);
-    console.log('image added!');
-  }
-
+  await addArrayOfImage(images.array, cardId);
+  
 };
 
 const getRandomCard = async () => {
@@ -115,6 +99,120 @@ const getRandomCard = async () => {
   return randomCard;
 };
 
+const editCard = async (body) => {
+
+  let columCardNameArray = ["name", "code", "rarity_id", "opus_id", "cost", "card_type_id", "exburst", "multiplayable", "power", "abilities"];
+  let cardKeyArray = [];
+  let cardValueArray = [];
+
+  for (const [key, value] of Object.entries(body)) {
+
+    if (columCardNameArray.includes(key)){
+      let columToSet = key;
+      if (key.endsWith("id"))
+        columToSet += " = UUID_TO_BIN(?)";
+      else 
+        columToSet += " = ?";
+  
+    cardKeyArray.push(columToSet);  
+    cardValueArray.push(value);
+    }
+
+  }
+
+  if (cardKeyArray.length > 0){
+    cardValueArray.push(body.id);
+    const columCardString = cardKeyArray.join(", ");
+  
+    console.log(columCardString);
+    console.log(cardValueArray.toString());
+  
+    const initialCardString = 'update card set $ where id = UUID_TO_BIN(?);';
+    const cardQuery = initialCardString.replace("$", columCardString);
+    console.log(cardQuery);
+  
+    const cardResult = await pool.query(cardQuery, cardValueArray);
+    console.log(cardResult);
+  }
+
+  /* --------- OTHERS TABLES ----------- */
+
+  if (body.hasOwnProperty('elements_id')){
+    const elementArray = body.elements_id.split(" ");
+    if (elementArray.length > 0){
+      const elementDeleteQuery = 'delete from card_element where card_id = UUID_TO_BIN(?);';
+      const elementDeleteValue = [body.id];
+      const deleteResult = await pool.query(elementDeleteQuery, elementDeleteValue);
+
+      for (const element_id of elementArray) {
+        const elementQuery = 'insert into `card_element` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
+        const elementValues = [body.id, element_id];
+        const elementResult = await pool.query(elementQuery, elementValues);
+        console.log('element added!');
+      }
+    }
+  }
+
+  if (body.hasOwnProperty('jobs_id')){
+    const jobArray = body.jobs_id.array;
+    if (jobArray.length > 0){
+      const jobDeleteQuery = 'delete from card_job where card_id = UUID_TO_BIN(?);';
+      const jobDeleteValue = [body.id];
+      const deleteResult = await pool.query(jobDeleteQuery, jobDeleteValue);
+
+      for (const job_id of jobArray) {
+        const jobQuery = 'insert into `card_job` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
+        const jobValues = [body.id, job_id];
+        const jobResult = await pool.query(jobQuery, jobValues);
+        console.log('job added!');
+      }
+    }
+  }
+
+  if (body.hasOwnProperty('categories_id')){
+    const categoryArray = body.categories_id.split(" ");
+    if (categoryArray.length > 0){
+      const categoryDeleteQuery = 'delete from card_category where card_id = UUID_TO_BIN(?);';
+      const categoryDeleteValue = [body.id];
+      const deleteResult = await pool.query(categoryDeleteQuery, categoryDeleteValue);
+
+      for (const category_id of categoryArray) {
+        const categoryQuery = 'insert into `card_category` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
+        const categoryValues = [body.id, category_id];
+        const categoryResult = await pool.query(categoryQuery, categoryValues);
+        console.log('category added!');
+      }
+    }
+  }
+
+  if (body.hasOwnProperty('images')){
+    const imageArray = body.images.array;
+    if (imageArray.length > 0){
+
+      // deleting currents images
+      const getImageQuery = 'select src from image where card_id = UUID_TO_BIN(?);';
+      const getImageValue = [body.id];
+      const srcImage = await pool.query(getImageQuery, getImageValue);
+
+      for (const image of srcImage[0]){
+        fs.unlink(image.src, (err) => {
+          if (err)
+            console.log(err);
+        });
+      };
+
+      const imageDeleteQuery = 'delete from image where card_id = UUID_TO_BIN(?);';
+      const imageDeleteValue = [body.id];
+      const deleteResult = await pool.query(imageDeleteQuery, imageDeleteValue);
+
+      // Adding new image
+      await addArrayOfImage(imageArray, body.id);
+    }
+  }
+
+};
+
+
 /**    --------------------------    */
 
 const addOpus = async (name) => {
@@ -132,6 +230,24 @@ const getImageType = async () => {
   console.log(imageTypeResult);
   return imageTypeResult;
 };
+
+const addArrayOfImage = async (arrayOfImage, card_id) => {
+  const dir = "image/card/"
+  for (const image of arrayOfImage) {
+    const image_id = uuidv4();
+    const base64Image = image.base64String.split(';base64,').pop(); // Remove header
+    const path = `${dir}${image_id}.jpeg`;
+
+    fs.writeFile(path, base64Image, { encoding: 'base64' }, function (err) {
+      console.log('Image created');
+    });
+
+    const imageQuery = 'insert into `image` values (UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?), ?);';
+    const imageValues = [image_id, card_id, image.image_type_id, path];
+    const imageResult = await pool.query(imageQuery, imageValues);
+    console.log('image added!');
+  }
+}
 
 const getProducts = async (orderBy = 'name', direction = 'asc') => {
   const query = 'select BIN_TO_UUID(product.id) as `id`, name, description, price, BIN_TO_UUID(category_id) as `category_id`, isActive, created_at, modified_at from `product` order by ' + orderBy + ' ' + direction + ';';
@@ -156,4 +272,4 @@ const deleteProduct = async (id) => {
   return results;
 };
 
-module.exports = { addOpus, addCard, getRandomCard, getImageType };
+module.exports = { addOpus, addCard, editCard, getRandomCard, getImageType };

@@ -10,7 +10,7 @@ app.use(express.json({limit: '50mb'}));
 app.use("/image", express.static(path.join(__dirname, 'image')));
 
 const {addOpus, getOpus, editOpus, deleteOpus} = require ('./connection.js');
-const {addCard, getImageType, editCard, deleteCard} = require ('./connection.js');
+const {addCard, editCard, deleteCard} = require ('./connection.js');
 const {getRandomCard} = require ('./connection.js');
 
 app.post("/opus", async (req, res) => {
@@ -27,9 +27,16 @@ app.post("/card", async (req, res) => {
     res.send("Card Added !");
 });
 
-app.get("/image_type", async (req, res) => {
-    const imageType = await getImageType();
-    res.json(imageType);
+app.put("/api/v1/card", async (req, res) => {
+
+    console.log(req.body);
+    const body = req.body;
+    await editCard(body);
+    /** 
+    const {id, name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images} = req.body;
+    await editCard(id, name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images);
+    */
+    res.send("Card edited !");
 });
 
 app.get("/api/v1/card/random", async (req, res) => {
