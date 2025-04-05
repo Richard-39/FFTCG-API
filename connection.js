@@ -57,7 +57,7 @@ const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exbur
 
   // Adding image
   await addArrayOfImage(images.array, cardId);
-  
+
 };
 
 const getRandomCard = async () => {
@@ -107,39 +107,39 @@ const editCard = async (body) => {
 
   for (const [key, value] of Object.entries(body)) {
 
-    if (columCardNameArray.includes(key)){
+    if (columCardNameArray.includes(key)) {
       let columToSet = key;
       if (key.endsWith("id"))
         columToSet += " = UUID_TO_BIN(?)";
-      else 
+      else
         columToSet += " = ?";
-  
-    cardKeyArray.push(columToSet);  
-    cardValueArray.push(value);
+
+      cardKeyArray.push(columToSet);
+      cardValueArray.push(value);
     }
 
   }
 
-  if (cardKeyArray.length > 0){
+  if (cardKeyArray.length > 0) {
     cardValueArray.push(body.id);
     const columCardString = cardKeyArray.join(", ");
-  
+
     console.log(columCardString);
     console.log(cardValueArray.toString());
-  
+
     const initialCardString = 'update card set $ where id = UUID_TO_BIN(?);';
     const cardQuery = initialCardString.replace("$", columCardString);
     console.log(cardQuery);
-  
+
     const cardResult = await pool.query(cardQuery, cardValueArray);
     console.log(cardResult);
   }
 
   /* --------- OTHERS TABLES ----------- */
 
-  if (body.hasOwnProperty('elements_id')){
+  if (body.hasOwnProperty('elements_id')) {
     const elementArray = body.elements_id.split(" ");
-    if (elementArray.length > 0){
+    if (elementArray.length > 0) {
       const elementDeleteQuery = 'delete from card_element where card_id = UUID_TO_BIN(?);';
       const elementDeleteValue = [body.id];
       const deleteResult = await pool.query(elementDeleteQuery, elementDeleteValue);
@@ -153,9 +153,9 @@ const editCard = async (body) => {
     }
   }
 
-  if (body.hasOwnProperty('jobs_id')){
+  if (body.hasOwnProperty('jobs_id')) {
     const jobArray = body.jobs_id.array;
-    if (jobArray.length > 0){
+    if (jobArray.length > 0) {
       const jobDeleteQuery = 'delete from card_job where card_id = UUID_TO_BIN(?);';
       const jobDeleteValue = [body.id];
       const deleteResult = await pool.query(jobDeleteQuery, jobDeleteValue);
@@ -169,9 +169,9 @@ const editCard = async (body) => {
     }
   }
 
-  if (body.hasOwnProperty('categories_id')){
+  if (body.hasOwnProperty('categories_id')) {
     const categoryArray = body.categories_id.split(" ");
-    if (categoryArray.length > 0){
+    if (categoryArray.length > 0) {
       const categoryDeleteQuery = 'delete from card_category where card_id = UUID_TO_BIN(?);';
       const categoryDeleteValue = [body.id];
       const deleteResult = await pool.query(categoryDeleteQuery, categoryDeleteValue);
@@ -185,21 +185,12 @@ const editCard = async (body) => {
     }
   }
 
-  if (body.hasOwnProperty('images')){
+  if (body.hasOwnProperty('images')) {
     const imageArray = body.images.array;
-    if (imageArray.length > 0){
+    if (imageArray.length > 0) {
 
       // deleting currents images
-      const getImageQuery = 'select src from image where card_id = UUID_TO_BIN(?);';
-      const getImageValue = [body.id];
-      const srcImage = await pool.query(getImageQuery, getImageValue);
-
-      for (const image of srcImage[0]){
-        fs.unlink(image.src, (err) => {
-          if (err)
-            console.log(err);
-        });
-      };
+      await deleteImageFromDisc(body.id);
 
       const imageDeleteQuery = 'delete from image where card_id = UUID_TO_BIN(?);';
       const imageDeleteValue = [body.id];
@@ -212,6 +203,31 @@ const editCard = async (body) => {
 
 };
 
+const deleteCard = async (id) => {
+
+  await deleteImageFromDisc(id);
+
+  const deleteQuery = 'delete from card where id = UUID_TO_BIN(?);';
+  const deleteValues = [id];
+  const deleteResult = await pool.query(deleteQuery, deleteValues);
+  console.log("Card deleted");
+
+};
+
+const deleteImageFromDisc = async (card_id) => {
+  // deleting currents images
+  const getImageQuery = 'select src from image where card_id = UUID_TO_BIN(?);';
+  const getImageValue = [card_id];
+  const srcImage = await pool.query(getImageQuery, getImageValue);
+
+  for (const image of srcImage[0]) {
+    fs.unlink(image.src, (err) => {
+      if (err)
+        console.log(err);
+    });
+  };
+  console.log("Images deleted");
+};
 
 /**    --------------------------    */
 
@@ -272,4 +288,4 @@ const deleteProduct = async (id) => {
   return results;
 };
 
-module.exports = { addOpus, addCard, editCard, getRandomCard, getImageType };
+module.exports = { addCard, editCard, deleteCard, getRandomCard, getImageType, addOpus };

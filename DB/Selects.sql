@@ -42,6 +42,7 @@ join card on card_category.card_id = card.id
 join category on card_category.category_id = category.id;
 
 select BIN_TO_UUID(card_id), src from image;
+select src from image where card_id = UUID_TO_BIN('c1cd682c-3cdc-4b1a-b40e-2eebd8b73c41');
 
 SELECT * FROM card
 ORDER BY RAND()

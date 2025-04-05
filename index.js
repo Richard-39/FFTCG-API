@@ -39,6 +39,12 @@ app.put("/api/v1/card", async (req, res) => {
     res.send("Card edited !");
 });
 
+app.delete("/api/v1/card/:id", async (req, res) => {
+    const {id} = req.params;
+    const result = await deleteCard(id);
+    res.send("Card deleted"); 
+}); 
+
 app.get("/api/v1/card/random", async (req, res) => {
     const random = await getRandomCard();
     res.json(random);

@@ -97,8 +97,10 @@ create table image
 (
 	id binary(16) primary key,
     card_id binary(16),
-    foreign key (card_id) references card (id),
+    foreign key (card_id) references card (id) on delete cascade,
     image_type_id binary(16),
     foreign key (image_type_id) references image_type (id),
     src mediumtext
 );
+
+-- alter table image add foreign key (card_id) references card (id) on delete cascade;
