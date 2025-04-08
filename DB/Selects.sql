@@ -58,3 +58,25 @@ SHOW STATUS WHERE `variable_name` = 'Threads_connected';
 select 1;
 
 do sleep(5);
+
+-- card by code --
+SELECT BIN_TO_UUID(card.id) as `id`, card.name, code, rarity.name as `rarity`, opus.name as `opus`, cost, card_type.name as `card type`, exburst, multiplayable, power, abilities, create_at, update_at 
+from card 
+join rarity on card.rarity_id = rarity.id 
+join opus on card.opus_id = opus.id 
+join card_type on card.card_type_id = card_type.id 
+where code = '25-006L';
+
+select card.name, src from card 
+join 
+	(select card_id, image_type.name, src from image
+	join image_type on image.image_type_id = image_type.id
+	where image_type.name = "Regular") as subImage 
+on subImage.card_id = card.id;
+
+select card_id, image_type.name, src from image
+join image_type on image.image_type_id = image_type.id
+where image_type.name = "Regular";
+
+
+SELECT code from card order by rand() limit 1;

@@ -211,4 +211,20 @@ set `name` = 'produto 3', `description` = 'descripion producto 3', `price` = 300
 where `id` = UUID_TO_BIN('941c9289-648a-433d-87d4-6e9a40dc74ec');
 */
 
+insert into card (id, name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, create_at, update_at) values
+(UUID_TO_BIN(UUID()), 
+'card example', 
+'code-001', 
+UUID_TO_BIN('b82b3a69-0aa0-11f0-abac-309c2314b3fd'), 
+UUID_TO_BIN('9ad5bd86-0aa5-11f0-abac-309c2314b3fd'),
+null,
+UUID_TO_BIN('f962eabb-0aa5-11f0-abac-309c2314b3fd'),
+true,
+false,
+8000,
+'habilitie example habilitie example 2',
+'2025-01-26 00:15:12',
+'2025-01-26 00:15:12'
+);
+
 -- update image set src = "image/card/c8b1a390-5b7a-42c2-9af5-37cace912168_FullArt_1.jpeg" where card_id = (UUID_TO_BIN('c8b1a390-5b7a-42c2-9af5-37cace912168'));

@@ -1,6 +1,7 @@
 const mysql = require('mysql2/promise');
 const { v4: uuidv4 } = require('uuid');
 const { dateFormat } = require('./extension.js');
+const {constants} = require('./constants.js');
 
 const fs = require('fs');
 
@@ -17,86 +18,165 @@ const pool = mysql.createPool({
 
 const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images) => {
 
+  // Adding card
   const post = 'insert into `card` values (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), ?, UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?);';
   const cardId = uuidv4();
   const values = [cardId, name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, dateFormat(new Date()), dateFormat(new Date())];
-  const result = await pool.query(post, values);
-  console.log('Card added!');
+
+  try {
+    await pool.query(post, values);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> addCard -> post: ${error}` }
+  }
 
   // Adding element
-  console.log("elements: " + elements_id);
-  console.log("length: " + elements_id.split(" ").length);
   const arrayOfElements = elements_id.split(" ");
   for (const element of arrayOfElements) {
     const elementQuery = 'insert into `card_element` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
     const elementValues = [cardId, element];
-    const elementResult = await pool.query(elementQuery, elementValues);
-    console.log('element added!');
+    try {
+      await pool.query(elementQuery, elementValues);
+    } catch (error) {
+      console.log(error);
+      throw { message: `connection.js -> addCard -> elementQuery: ${error}` }
+    }
   }
 
   // adding job
-  console.log("jobs: " + jobs_id.array);
-  console.log("length: " + jobs_id.array.length);
   for (const job of jobs_id.array) {
     const jobQuery = 'insert into `card_job` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
     const jobValues = [cardId, job];
-    const jobResult = await pool.query(jobQuery, jobValues);
-    console.log('job added!');
+    try {
+      await pool.query(jobQuery, jobValues);
+    } catch (error) {
+      console.log(error);
+      throw { message: `connection.js -> addCard -> jobQuery: ${error}` }
+    }
   }
 
   // adding category
-  console.log("categories: " + categories_id);
-  console.log("length: " + categories_id.split(" ").length);
   const arrayOfCategories = categories_id.split(" ");
   for (const category of arrayOfCategories) {
     const categoryQuery = 'insert into `card_category` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
     const categoryValues = [cardId, category];
-    const categoryResult = await pool.query(categoryQuery, categoryValues);
-    console.log('category added!');
+    try {
+      await pool.query(categoryQuery, categoryValues);
+    } catch (error) {
+      console.log(error);
+      throw { message: `connection.js -> addCard -> categoryQuery: ${error}` }
+    }
   }
 
   // Adding image
-  await addArrayOfImage(images.array, cardId);
-
+  try {
+    await addArrayOfImage(images.array, cardId);
+  } catch (error) {
+    throw error
+  }
 };
 
-const getRandomCard = async () => {
-  const cardQuery = 'SELECT BIN_TO_UUID(card.id) as `id`, card.name, code, rarity.name as `rarity`, opus.name as `opus`, cost, card_type.name as `card type`, exburst, multiplayable, power, abilities, create_at, update_at from card join rarity on card.rarity_id = rarity.id join opus on card.opus_id = opus.id join card_type on card.card_type_id = card_type.id ORDER BY RAND() LIMIT 1;';
-  const [cardResult] = await pool.query(cardQuery);
+const getCardByCode = async (code) => {
+
+  let cardResult, elementResult, jobResult, categoryResult, imageResult;
+
+  const cardQuery = 'SELECT BIN_TO_UUID(card.id) as `id`, card.name, code, rarity.name as `rarity`, opus.name as `opus`, cost, card_type.name as `card type`, exburst, multiplayable, power, abilities, create_at, update_at from card join rarity on card.rarity_id = rarity.id join opus on card.opus_id = opus.id join card_type on card.card_type_id = card_type.id where code = ?;';
+  const cardValue = [code];
+  try {
+    [cardResult] = await pool.query(cardQuery, cardValue);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> getCardByCode -> cardQuery: ${error}` }
+  }
+
+  if (cardResult.length <= 0)
+    throw { message: `connection.js -> getCardByCode -> cardQuery: no result for code given` }
 
   const elementQuery = 'select element.name from card_element join element on card_element.element_id = element.id where card_element.card_id = UUID_TO_BIN(?);';
   const elementValues = [cardResult[0].id];
-  const [elementResult] = await pool.query(elementQuery, elementValues);
+  try {
+    [elementResult] = await pool.query(elementQuery, elementValues);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> getCardByCode -> elementQuery: ${error}` }
+  }
 
   const jobQuery = 'select job.name from card_job join job on card_job.job_id = job.id where card_job.card_id = UUID_TO_BIN(?);';
   const jobValues = [cardResult[0].id];
-  const [jobResult] = await pool.query(jobQuery, jobValues);
+  try {
+    [jobResult] = await pool.query(jobQuery, jobValues);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> getCardByCode -> jobQuery: ${error}` }
+  }
 
   const categoryQuery = 'select category.name from card_category join category on card_category.category_id = category.id where card_category.card_id = UUID_TO_BIN(?);';
   const categoryValues = [cardResult[0].id];
-  const [categoryResult] = await pool.query(categoryQuery, categoryValues);
+  try {
+    [categoryResult] = await pool.query(categoryQuery, categoryValues);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> getCardByCode -> categoryQuery: ${error}` }
+  }
 
   const imageQuery = 'select image_type.name as `ilustration`, src from image join image_type on image.image_type_id = image_type.id where image.card_id = UUID_TO_BIN(?);';
   const ImageValues = [cardResult[0].id];
-  const [imageResult] = await pool.query(imageQuery, ImageValues);
+  try {
+    [imageResult] = await pool.query(imageQuery, ImageValues);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> getCardByCode -> imageQuery: ${error}` }
+  }
 
-  let Path = '';
-  if (process.env.ENVIROMENT == 'development')
-    Path = 'http://localhost:3000/';
-  else if (process.env.ENVIROMENT == 'production')
-    Path = 'https://fftcg-api.onrender.com/';
-
-  let randomCard = cardResult[0];
-  randomCard.elements = elementResult.map(e => e.name);
-  randomCard.jobs = jobResult.map(j => j.name);
-  randomCard.categories = categoryResult.map(c => c.name);
-  randomCard.ilustrations = imageResult.map(i => {
+  let Card = cardResult[0];
+  Card.elements = elementResult.map(e => e.name);
+  Card.jobs = jobResult.map(j => j.name);
+  Card.categories = categoryResult.map(c => c.name);
+  Card.ilustrations = imageResult.map(i => {
     const obj = Object.assign({}, i);
-    obj.src = Path + i.src;
+    obj.src = process.env.LOCAL_PATH + i.src;
     return obj;
   });
-  console.log(randomCard);
-  return randomCard;
+  return Card;
+};
+
+const getRandomCard = async () => {
+
+  let codeResult;
+  const codeQuery = 'SELECT code from card order by rand() limit 1;';
+  try {
+    [codeResult] = await pool.query(codeQuery);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> getRandomCard -> codeQuery: ${error}` }
+  }
+
+  try {
+    const card = await getCardByCode(codeResult[0].code);
+    return card;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getCard = async({ limit = 10}) => {
+
+  let cardResult;
+  const cardQuery = "select card.name, code, src from card join (select card_id, image_type.name, src from image join image_type on image.image_type_id = image_type.id where image_type.name = 'Regular') as subImage on subImage.card_id = card.id limit ?;";
+  const cardValue = [parseInt(limit)];
+  try {
+    [cardResult] = await pool.query(cardQuery, cardValue);
+  } catch (error) {
+    console.log(error);
+    throw {message: `connection.js -> getCard -> cardQuery: ${error}`}
+  }
+
+  cardResult.map(card => {
+    card.src = `${process.env.LOCAL_PATH}${card.src}`;
+    card.link = `${process.env.LOCAL_PATH}api/v1/card/${card.code}`
+  });
+
+  return cardResult;
 };
 
 const editCard = async (body) => {
@@ -117,22 +197,19 @@ const editCard = async (body) => {
       cardKeyArray.push(columToSet);
       cardValueArray.push(value);
     }
-
   }
 
   if (cardKeyArray.length > 0) {
     cardValueArray.push(body.id);
     const columCardString = cardKeyArray.join(", ");
-
-    console.log(columCardString);
-    console.log(cardValueArray.toString());
-
     const initialCardString = 'update card set $ where id = UUID_TO_BIN(?);';
     const cardQuery = initialCardString.replace("$", columCardString);
-    console.log(cardQuery);
-
-    const cardResult = await pool.query(cardQuery, cardValueArray);
-    console.log(cardResult);
+    try {
+      await pool.query(cardQuery, cardValueArray);
+    } catch (error) {
+      console.log(error);
+      throw { message: `connection.js -> editCard -> cardQuery: ${error}` }
+    }
   }
 
   /* --------- OTHERS TABLES ----------- */
@@ -142,13 +219,22 @@ const editCard = async (body) => {
     if (elementArray.length > 0) {
       const elementDeleteQuery = 'delete from card_element where card_id = UUID_TO_BIN(?);';
       const elementDeleteValue = [body.id];
-      const deleteResult = await pool.query(elementDeleteQuery, elementDeleteValue);
+      try {
+        await pool.query(elementDeleteQuery, elementDeleteValue);
+      } catch (error) {
+        console.log(error);
+        throw { message: `connection.js -> editCard -> elementDeleteQuery: ${error}` }
+      }
 
       for (const element_id of elementArray) {
         const elementQuery = 'insert into `card_element` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
         const elementValues = [body.id, element_id];
-        const elementResult = await pool.query(elementQuery, elementValues);
-        console.log('element added!');
+        try {
+          await pool.query(elementQuery, elementValues);
+        } catch (error) {
+          console.log(error);
+          throw { message: `connection.js -> editCard -> elementQuery: ${error}` }
+        }
       }
     }
   }
@@ -158,13 +244,22 @@ const editCard = async (body) => {
     if (jobArray.length > 0) {
       const jobDeleteQuery = 'delete from card_job where card_id = UUID_TO_BIN(?);';
       const jobDeleteValue = [body.id];
-      const deleteResult = await pool.query(jobDeleteQuery, jobDeleteValue);
+      try {
+        await pool.query(jobDeleteQuery, jobDeleteValue);
+      } catch (error) {
+        console.log(error);
+        throw { message: `connection.js -> editCard -> jobDeleteQuery: ${error}` }
+      }
 
       for (const job_id of jobArray) {
         const jobQuery = 'insert into `card_job` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
         const jobValues = [body.id, job_id];
-        const jobResult = await pool.query(jobQuery, jobValues);
-        console.log('job added!');
+        try {
+          await pool.query(jobQuery, jobValues);
+        } catch (error) {
+          console.log(error);
+          throw { message: `connection.js -> editCard -> jobQuery: ${error}` }
+        }
       }
     }
   }
@@ -174,13 +269,22 @@ const editCard = async (body) => {
     if (categoryArray.length > 0) {
       const categoryDeleteQuery = 'delete from card_category where card_id = UUID_TO_BIN(?);';
       const categoryDeleteValue = [body.id];
-      const deleteResult = await pool.query(categoryDeleteQuery, categoryDeleteValue);
+      try {
+        await pool.query(categoryDeleteQuery, categoryDeleteValue);
+      } catch (error) {
+        console.log(error);
+        throw { message: `connection.js -> editCard -> categoryDeleteQuery: ${error}` }
+      }
 
       for (const category_id of categoryArray) {
         const categoryQuery = 'insert into `card_category` values (UUID_TO_BIN(?), UUID_TO_BIN(?));';
         const categoryValues = [body.id, category_id];
-        const categoryResult = await pool.query(categoryQuery, categoryValues);
-        console.log('category added!');
+        try {
+          await pool.query(categoryQuery, categoryValues);
+        } catch (error) {
+          console.log(error);
+          throw { message: `connection.js -> editCard -> categoryQuery: ${error}` }
+        }
       }
     }
   }
@@ -188,16 +292,28 @@ const editCard = async (body) => {
   if (body.hasOwnProperty('images')) {
     const imageArray = body.images.array;
     if (imageArray.length > 0) {
-
       // deleting currents images
-      await deleteImageFromDisc(body.id);
+      try {
+        await deleteImageFromDisc(body.id);
+      } catch (error) {
+        throw error;
+      }
 
       const imageDeleteQuery = 'delete from image where card_id = UUID_TO_BIN(?);';
       const imageDeleteValue = [body.id];
-      const deleteResult = await pool.query(imageDeleteQuery, imageDeleteValue);
+      try {
+        await pool.query(imageDeleteQuery, imageDeleteValue);
+      } catch (error) {
+        console.log(error);
+        throw { message: `connection.js -> editCard -> imageDeleteQuery: ${error}` }
+      }
 
       // Adding new image
-      await addArrayOfImage(imageArray, body.id);
+      try {
+        await addArrayOfImage(imageArray, body.id);
+      } catch (error) {
+        throw error;
+      }
     }
   }
 
@@ -205,28 +321,45 @@ const editCard = async (body) => {
 
 const deleteCard = async (id) => {
 
-  await deleteImageFromDisc(id);
+  try {
+    await deleteImageFromDisc(id);
+  } catch (error) {
+    throw error;
+  }
 
   const deleteQuery = 'delete from card where id = UUID_TO_BIN(?);';
   const deleteValues = [id];
-  const deleteResult = await pool.query(deleteQuery, deleteValues);
-  console.log("Card deleted");
+  try {
+    await pool.query(deleteQuery, deleteValues);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> deleteCard: ${error}` }
+  }
 
+  console.log("Card deleted");
 };
 
 const deleteImageFromDisc = async (card_id) => {
   // deleting currents images
+  let srcImage;
   const getImageQuery = 'select src from image where card_id = UUID_TO_BIN(?);';
   const getImageValue = [card_id];
-  const srcImage = await pool.query(getImageQuery, getImageValue);
+  try {
+    srcImage = await pool.query(getImageQuery, getImageValue);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> deleteImageFromDisc -> getImageQuery: ${error}` }
+  }
 
   for (const image of srcImage[0]) {
-    fs.unlink(image.src, (err) => {
-      if (err)
-        console.log(err);
-    });
+    try {
+      fs.unlinkSync(image.src);
+      console.log("Images deleted");
+    } catch (error) {
+      console.log(error);
+      throw { message: `connection.js -> deleteImageFromDisc -> fs.unlinkSync: ${error}` }
+    }
   };
-  console.log("Images deleted");
 };
 
 /**    --------------------------    */
@@ -239,53 +372,30 @@ const addOpus = async (name) => {
   console.log(result);
 };
 
-const getImageType = async () => {
-  const imageTypeQuery = 'select BIN_TO_UUID(image_type.id) as "id", name from image_type;';
-  const [imageTypeResult, imageTypefields] = await pool.query(imageTypeQuery);
-  console.log(imageTypefields);
-  console.log(imageTypeResult);
-  return imageTypeResult;
-};
-
 const addArrayOfImage = async (arrayOfImage, card_id) => {
-  const dir = "image/card/"
   for (const image of arrayOfImage) {
     const image_id = uuidv4();
     const base64Image = image.base64String.split(';base64,').pop(); // Remove header
-    const path = `${dir}${image_id}.jpeg`;
+    const path = `${constants.imagePath}${image_id}.jpeg`;
 
-    fs.writeFile(path, base64Image, { encoding: 'base64' }, function (err) {
-      console.log('Image created');
-    });
+    try {
+      fs.writeFile(path, base64Image, { encoding: 'base64' }, function (err) { });
+    } catch (error) {
+      console.log(error);
+      throw { message: `connection.js -> addArrayOfImage -> fs.writeFile: ${error}` }
+    }
 
     const imageQuery = 'insert into `image` values (UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?), ?);';
     const imageValues = [image_id, card_id, image.image_type_id, path];
-    const imageResult = await pool.query(imageQuery, imageValues);
-    console.log('image added!');
-  }
+    try {
+      await pool.query(imageQuery, imageValues);
+    } catch (error) {
+      console.log(error);
+      throw { message: `connection.js -> addArrayOfImage -> imageQuery: ${error}` }
+    };
+  };
+  return { message: "images added" };
 }
 
-const getProducts = async (orderBy = 'name', direction = 'asc') => {
-  const query = 'select BIN_TO_UUID(product.id) as `id`, name, description, price, BIN_TO_UUID(category_id) as `category_id`, isActive, created_at, modified_at from `product` order by ' + orderBy + ' ' + direction + ';';
-  const [results, fields] = await pool.query(query);
-  console.log(fields);
-  return results;
-};
 
-const editProduct = async (id, name, description, price, category_id, isActive) => {
-  const queryString = 'update `product` set `name` = ?, `description` = ?, `price` = ?, `category_id` = UUID_TO_BIN(?), `isActive` = ?, `modified_at` = ? where `id` = UUID_TO_BIN(?);';
-  const values = [name, description, price, category_id, isActive, dateFormat(new Date()), id];
-  const [results] = await pool.query(queryString, values);
-  console.log(results);
-  return results;
-};
-
-const deleteProduct = async (id) => {
-  const queryString = 'delete from `product` where `id` = UUID_TO_BIN(?);';
-  const values = [id];
-  const [results] = await pool.query(queryString, values);
-  console.log(results);
-  return results;
-};
-
-module.exports = { addCard, editCard, deleteCard, getRandomCard, getImageType, addOpus };
+module.exports = { addCard, editCard, deleteCard, getCardByCode, getRandomCard, getCard, addOpus };
