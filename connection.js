@@ -4,6 +4,7 @@ const { dateFormat } = require('./extension.js');
 const {constants} = require('./constants.js');
 
 const fs = require('fs');
+const { type } = require('os');
 
 const pool = mysql.createPool({
   connectionLimit: 5,
@@ -159,11 +160,54 @@ const getRandomCard = async () => {
   }
 };
 
-const getCard = async({ limit = 10}) => {
+const getCard = async({ limit = 10, page = 1, exburst}) => {
+
+  /*
+  
+  let columCardNameArray = ["name", "code", "rarity_id", "opus_id", "cost", "card_type_id", "exburst", "multiplayable", "power", "abilities"];
+  let cardKeyArray = [];
+  let cardValueArray = [];
+
+  for (const [key, value] of Object.entries(body)) {
+
+    if (columCardNameArray.includes(key)) {
+      let columToSet = key;
+      if (key.endsWith("id"))
+        columToSet += " = UUID_TO_BIN(?)";
+      else
+        columToSet += " = ?";
+
+      cardKeyArray.push(columToSet);
+      cardValueArray.push(value);
+    }
+  }
+
+  if (cardKeyArray.length > 0) {
+    cardValueArray.push(body.id);
+    const columCardString = cardKeyArray.join(", ");
+    const initialCardString = 'update card set $ where id = UUID_TO_BIN(?);';
+    const cardQuery = initialCardString.replace("$", columCardString);
+    try {
+      await pool.query(cardQuery, cardValueArray);
+    } catch (error) {
+      console.log(error);
+      throw { message: `connection.js -> editCard -> cardQuery: ${error}` }
+    }
+  }
+
+  */
+
+  if (exburst)
+    console.log("con exburst")
+  else
+    console.log("asi no mas");
 
   let cardResult;
-  const cardQuery = "select card.name, code, src from card join (select card_id, image_type.name, src from image join image_type on image.image_type_id = image_type.id where image_type.name = 'Regular') as subImage on subImage.card_id = card.id limit ?;";
-  const cardValue = [parseInt(limit)];
+  const itemLimit = Number.isNaN(parseInt(limit)) ? 10 : Math.trunc(Math.abs(limit)); // check if the limit value is not a NaN
+  const offset = Number.isNaN(parseInt(page)) ? 1 : Math.trunc(Math.abs(page)) - 1; // check if the page value is not a NaN
+  const cardQuery = "select card.name, code, src from card join (select card_id, image_type.name, src from image join image_type on image.image_type_id = image_type.id where image_type.name = 'Regular') as subImage on subImage.card_id = card.id order by code asc limit ? offset ?;";
+  const cardValue = [itemLimit, offset];
+
   try {
     [cardResult] = await pool.query(cardQuery, cardValue);
   } catch (error) {

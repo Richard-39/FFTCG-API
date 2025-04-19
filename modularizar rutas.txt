@@ -1,0 +1,105 @@
+¡Buena pregunta! 😄
+
+Cuando trabajas con **Express**, al principio uno tiende a poner todo el código (rutas, lógica, etc.) en un solo archivo, pero a medida que el proyecto crece, eso se vuelve más difícil de manejar. Ahí es donde entra el concepto de **modularizar las rutas**.
+
+### ¿Qué significa modularizar las rutas?
+
+Modularizar las rutas significa **separar** el manejo de las rutas (y su lógica) en **archivos independientes**. Esto hace que el código sea más organizado, limpio y fácil de mantener.
+
+Por ejemplo, en vez de tener todo dentro de `app.js` o `server.js`, podemos crear un archivo específico para las rutas de las cartas (`cardRoutes.js`), otro para los usuarios, etc. Así separamos responsabilidades.
+
+### Ejemplo de cómo se vería tu backend modularizado
+
+#### 1. **Archivo principal `server.js` (o `app.js`)**
+Este es el archivo donde se inicializa Express y se configuran todas las rutas.
+
+```javascript
+const express = require('express');
+const app = express();
+const cardRoutes = require('./routes/cardRoutes');  // Importamos las rutas de cartas
+
+app.use(express.json());  // Para que Express entienda los datos en JSON
+
+// Usamos el archivo de rutas de cartas
+app.use('/api/v1/cards', cardRoutes);
+
+// Puerto
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+```
+
+#### 2. **Archivo de rutas `cardRoutes.js`**
+Aquí es donde defines todas las rutas relacionadas con las cartas.
+
+```javascript
+const express = require('express');
+const router = express.Router();
+
+// Aquí iría el código de tus controladores (lógica de cada ruta)
+const {
+  getCards,
+  getCardById,
+  createCard,
+  updateCard,
+  deleteCard
+} = require('../controllers/cardController');
+
+// Rutas
+router.get('/', getCards);  // Ruta para obtener todas las cartas
+router.get('/:id', getCardById);  // Ruta para obtener carta por ID
+router.post('/', createCard);  // Ruta para crear carta
+router.put('/:id', updateCard);  // Ruta para actualizar carta
+router.delete('/:id', deleteCard);  // Ruta para eliminar carta
+
+module.exports = router;  // Exportamos el router
+```
+
+#### 3. **Controlador `cardController.js`**
+Aquí es donde pones la **lógica de negocio** (lo que hace cada endpoint). Lo ideal es separar la lógica del manejo de rutas.
+
+```javascript
+// cardController.js
+
+// Get all cards
+const getCards = (req, res) => {
+  // Lógica para obtener las cartas desde la DB
+  res.status(200).json({ message: 'Lista de todas las cartas' });
+};
+
+// Get a specific card by ID
+const getCardById = (req, res) => {
+  // Lógica para obtener una carta por ID
+  res.status(200).json({ message: `Carta con ID: ${req.params.id}` });
+};
+
+// Create a new card
+const createCard = (req, res) => {
+  // Lógica para crear una carta nueva
+  res.status(201).json({ message: 'Carta creada' });
+};
+
+// Update a card
+const updateCard = (req, res) => {
+  // Lógica para actualizar una carta por ID
+  res.status(200).json({ message: `Carta con ID ${req.params.id} actualizada` });
+};
+
+// Delete a card
+const deleteCard = (req, res) => {
+  // Lógica para eliminar una carta por ID
+  res.status(200).json({ message: `Carta con ID ${req.params.id} eliminada` });
+};
+
+module.exports = { getCards, getCardById, createCard, updateCard, deleteCard };
+```
+
+### Beneficios de modularizar las rutas:
+1. **Facilita el mantenimiento:** Si tienes muchos endpoints (como para cartas, usuarios, autenticación), cada uno tiene su archivo, lo que hace que encontrar y modificar cosas sea más fácil.
+2. **Escalabilidad:** Si en el futuro agregas más funcionalidades, no tendrás que tocar archivos gigantes, solo agregas un archivo por cada recurso.
+3. **Legibilidad:** El código está más limpio y organizado, lo que facilita que otros (o tú mismo en el futuro) comprendan el proyecto.
+
+---
+
+¿Te gustaría que te ayude a modularizar tu código de esta forma, o ya tienes algo similar implementado? Si lo prefieres, puedo ayudarte con una de las rutas, como el **`POST /cards`** para que veas cómo quedaría estructurado. 😄

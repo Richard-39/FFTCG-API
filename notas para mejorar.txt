@@ -1,0 +1,33 @@
+Mejorá el README
+
+    Explicá qué hace la API, cómo probarla y qué rutas existen.
+
+    Mostrá ejemplos JSON como respuesta de la API.
+
+Endpoints RESTful
+
+    Ideal si agregás:
+
+        GET /cards → lista completa
+
+        GET /cards/:id → carta específica
+
+        POST /cards → crear
+
+        PUT /cards/:id → actualizar
+
+        DELETE /cards/:id → eliminar
+
+Base de datos real
+
+    ¿Usás MongoDB, SQLite, o los datos son locales?
+
+    Conectar a MongoDB (por ejemplo con Atlas) sería un buen siguiente paso si no lo hiciste aún.
+
+Validación
+
+    Usá express-validator o algo similar para chequear que los datos que suben estén completos y correctos.
+
+Despliegue en Render
+
+    Si ya está online, ¡genial! Podés agregar el link en el README. Si querés que lo revise también, pasámelo.
