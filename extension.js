@@ -38,5 +38,10 @@ const getOperator = (string) => {
     }
 };
 
+// maybe this method is not necesary
+const stringToCapitalize = (val) => {
+    const string = String(val).toLowerCase();
+    return String(string).charAt(0).toUpperCase() + String(string).slice(1);
+}
 
-module.exports = { dateFormat, clamp, getOperator }
+module.exports = { dateFormat, clamp, getOperator, stringToCapitalize }

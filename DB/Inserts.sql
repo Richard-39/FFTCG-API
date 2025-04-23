@@ -10,33 +10,33 @@ insert into rarity (id, name) values
 (UUID_TO_BIN(UUID()), 'Boss');
 select BIN_TO_UUID(rarity.id) as "id", name from rarity;
 
-insert into opus (id, name) values 
-(UUID_TO_BIN(UUID()), 'Opus I'),
-(UUID_TO_BIN(UUID()), 'Opus II'),
-(UUID_TO_BIN(UUID()), 'Opus III'),
-(UUID_TO_BIN(UUID()), 'Opus IV'),
-(UUID_TO_BIN(UUID()), 'Opus V'),
-(UUID_TO_BIN(UUID()), 'Opus VI'),
-(UUID_TO_BIN(UUID()), 'Opus VII'),
-(UUID_TO_BIN(UUID()), 'Opus VIII'),
-(UUID_TO_BIN(UUID()), 'Opus IX'),
-(UUID_TO_BIN(UUID()), 'Opus X'),
-(UUID_TO_BIN(UUID()), 'Opus XI'),
-(UUID_TO_BIN(UUID()), 'Opus XII'),
-(UUID_TO_BIN(UUID()), 'Opus XIII'),
-(UUID_TO_BIN(UUID()), 'Opus XIV'),
-(UUID_TO_BIN(UUID()), 'Opus XV (Crystal Dominion)'),
-(UUID_TO_BIN(UUID()), 'Opus XVI (Emissaries of Light)'),
-(UUID_TO_BIN(UUID()), 'Opus XVII (Rebellion\'s Call)'),
-(UUID_TO_BIN(UUID()), 'Opus XVIII (Resurgence of Power)'),
-(UUID_TO_BIN(UUID()), 'Opus XIX (From Nightmares)'),
-(UUID_TO_BIN(UUID()), 'Opus XX (Dawn of Heroes)'),
-(UUID_TO_BIN(UUID()), 'Opus XXI (Beyond Destiny)'),
-(UUID_TO_BIN(UUID()), 'Opus XXII (Hidden Hope)'),
-(UUID_TO_BIN(UUID()), 'Opus XXIII (Hidden Trials)'),
-(UUID_TO_BIN(UUID()), 'Opus XXIV (Hidden Legends)'),
-(UUID_TO_BIN(UUID()), 'Opus XXV (Tears of the Planet)'),
-(UUID_TO_BIN(UUID()), 'Legacy Collection');
+insert into opus (id, name, opus_code) values 
+(UUID_TO_BIN(UUID()), 'Opus I', '1'),
+(UUID_TO_BIN(UUID()), 'Opus II', '2'),
+(UUID_TO_BIN(UUID()), 'Opus III', '3'),
+(UUID_TO_BIN(UUID()), 'Opus IV', '4'),
+(UUID_TO_BIN(UUID()), 'Opus V', '5'),
+(UUID_TO_BIN(UUID()), 'Opus VI', '6'),
+(UUID_TO_BIN(UUID()), 'Opus VII', '7'),
+(UUID_TO_BIN(UUID()), 'Opus VIII', '8'),
+(UUID_TO_BIN(UUID()), 'Opus IX', '9'),
+(UUID_TO_BIN(UUID()), 'Opus X', '10'),
+(UUID_TO_BIN(UUID()), 'Opus XI', '11'),
+(UUID_TO_BIN(UUID()), 'Opus XII', '12'),
+(UUID_TO_BIN(UUID()), 'Opus XIII', '13'),
+(UUID_TO_BIN(UUID()), 'Opus XIV', '14'),
+(UUID_TO_BIN(UUID()), 'Opus XV (Crystal Dominion)', '15'),
+(UUID_TO_BIN(UUID()), 'Opus XVI (Emissaries of Light)', '16'),
+(UUID_TO_BIN(UUID()), 'Opus XVII (Rebellion\'s Call)', '17'),
+(UUID_TO_BIN(UUID()), 'Opus XVIII (Resurgence of Power)', '18'),
+(UUID_TO_BIN(UUID()), 'Opus XIX (From Nightmares)', '19'),
+(UUID_TO_BIN(UUID()), 'Opus XX (Dawn of Heroes)', '20'),
+(UUID_TO_BIN(UUID()), 'Opus XXI (Beyond Destiny)', '21'),
+(UUID_TO_BIN(UUID()), 'Opus XXII (Hidden Hope)', '22'),
+(UUID_TO_BIN(UUID()), 'Opus XXIII (Hidden Trials)', '23'),
+(UUID_TO_BIN(UUID()), 'Opus XXIV (Hidden Legends)', '24'),
+(UUID_TO_BIN(UUID()), 'Opus XXV (Tears of the Planet)', '25'),
+(UUID_TO_BIN(UUID()), 'Legacy Collection', 'LE');
 select BIN_TO_UUID(opus.id) as "id", name from opus;
 
 insert into card_type (id, name) values
@@ -228,3 +228,6 @@ false,
 );
 
 -- update image set src = "image/card/c8b1a390-5b7a-42c2-9af5-37cace912168_FullArt_1.jpeg" where card_id = (UUID_TO_BIN('c8b1a390-5b7a-42c2-9af5-37cace912168'));
+
+
+

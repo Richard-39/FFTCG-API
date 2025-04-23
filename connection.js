@@ -1,6 +1,6 @@
 const mysql = require('mysql2/promise');
 const { v4: uuidv4 } = require('uuid');
-const { dateFormat, clamp, getOperator } = require('./extension.js');
+const { dateFormat, clamp, getOperator, stringToCapitalize } = require('./extension.js');
 const { constants } = require('./constants.js');
 
 const fs = require('fs');
@@ -135,7 +135,7 @@ const getCardByCode = async (code) => {
   Card.categories = categoryResult.map(c => c.name);
   Card.ilustrations = imageResult.map(i => {
     const obj = Object.assign({}, i);
-    obj.src = process.env.LOCAL_PATH + i.src;
+    obj.src = process.env.LOCAL_PATH + "/" + i.src;
     return obj;
   });
   return Card;
@@ -160,12 +160,13 @@ const getRandomCard = async () => {
   }
 };
 
-const getCard = async (body) => {
+const getCard = async (queryString, url) => {
 
-  let itemLimit, offset;
+  let itemLimit, offset, currentPage;
   let arrayJoins = [];
   let arrayConditions = [];
   let queryValues = [];
+  let result = {};
 
   let cardQuery = "select distinct card.name, code, src from card " +
     "join (select card_id, src from image where image.image_type_id = (select id from image_type where name = 'Regular')) as subImage " +
@@ -174,155 +175,206 @@ const getCard = async (body) => {
     "$whereString$" +
     "order by code asc " +
     "limit ? " +
-    "offset ?; ";
+    "offset ? ;";
 
-  if (body.hasOwnProperty('limit'))
-    itemLimit = Number.isNaN(parseInt(body.limit)) ? 10 : Math.trunc(Math.abs(body.limit)); // check if the limit value is not a NaN
+  if (queryString.hasOwnProperty('limit'))
+    itemLimit = Number.isNaN(parseInt(queryString.limit)) ? 10 : Math.trunc(Math.abs(queryString.limit)); // check if the limit value is not a NaN
   else
     itemLimit = 10
 
-  if (body.hasOwnProperty('page'))
-    offset = Number.isNaN(parseInt(body.page)) ? 0 : Math.trunc(clamp(body.page - 1, 0, Number.MAX_SAFE_INTEGER)) * itemLimit; // check if the page value is not a NaN
-  else
+  if (queryString.hasOwnProperty('page')) {
+    const pageValue = parseInt(queryString.page);
+    currentPage = Number.isNaN(pageValue) ? 1 : Math.trunc(clamp(pageValue, 1, Number.MAX_SAFE_INTEGER)); // check if the page value is not a NaN
+    offset = (currentPage - 1) * itemLimit;
+  } else {
+    currentPage = 1;
     offset = 0;
+  }
 
   // where conditions
 
-  if (body.hasOwnProperty('exburst')) {
+  if (queryString.hasOwnProperty('exburst')) {
+    const string = String(queryString.exburst).toLowerCase();
+    const value = (string === 'true' || string === '1');
     arrayConditions.push("card.exburst = ?");
-    queryValues.push(body.exburst);
+    queryValues.push(value);
   }
 
-  if (body.hasOwnProperty('multiplayable')) {
+  if (queryString.hasOwnProperty('multiplayable')) {
+    const string = String(queryString.multiplayable).toLowerCase();
+    const value = (string === 'true' || string === '1');
     arrayConditions.push("card.multiplayable = ?");
-    queryValues.push(body.multiplayable);
+    queryValues.push(value);
   }
 
-  if (body.hasOwnProperty('power'))
-    if (body.power.values.length == 1) {
-      arrayConditions.push(`card.power ${getOperator(body.power.operator)} ?`);
-      queryValues.push(body.power.values[0]);
-    }
+  if (queryString.hasOwnProperty('power')) {
+    const value = queryString.power[1];
+    const power = Number.isNaN(parseInt(value)) ? null : Math.trunc(Math.abs(value));
+    if (power != null)
+      arrayConditions.push(`card.power ${getOperator(queryString.power[0])} ${power}`);
+  }
 
-    else if (body.power.values.length == 2) {
-      arrayConditions.push("card.power BETWEEN ? AND ?");
-      queryValues.push(Math.min(body.power.values[0], body.power.values[1]), Math.max(body.power.values[0], body.power.values[1]));
-    }
-
-  if (body.hasOwnProperty('abilities')) {
+  if (queryString.hasOwnProperty('abilities')) {
     arrayConditions.push(`card.abilities like ?`);
-    queryValues.push(`%${body.abilities}%`);
+    queryValues.push(`%${queryString.abilities}%`);
   }
 
-  if (body.hasOwnProperty('cost') && body.cost.length > 0) {
-    let costString = [];
-    body.cost.forEach(element => {
-      costString.push("card.cost = ?");
-      queryValues.push(element);
-    });
-    arrayConditions.push(`(${costString.join(" or ")})`);
+  if (queryString.hasOwnProperty('cost')) {
+    if (Array.isArray(queryString.cost)) {
+      let costString = [];
+      queryString.cost.forEach(element => {
+        costString.push("card.cost = ?");
+        queryValues.push(element);
+      });
+      arrayConditions.push(`(${costString.join(" or ")})`);
+    } else {
+      arrayConditions.push("card.cost = ?");
+      queryValues.push(queryString.cost);
+    }
   }
 
-  if (body.hasOwnProperty('name')) {
+  if (queryString.hasOwnProperty('name')) {
     arrayConditions.push(`card.name like ?`);
-    queryValues.push(`%${body.name}%`);
+    queryValues.push(`%${queryString.name}%`);
   }
 
-  if (body.hasOwnProperty('rarity_id') && body.rarity_id.length > 0) {
-    let rarity_idString = [];
-    body.rarity_id.forEach(element => {
-      rarity_idString.push("card.rarity_id = UUID_TO_BIN(?)");
-      queryValues.push(element);
-    });
-    arrayConditions.push(`(${rarity_idString.join(" or ")})`);
+  // conditions that need joins
+
+  if (queryString.hasOwnProperty('rarity')) {
+    arrayJoins.push("join rarity on card.rarity_id = rarity.id");
+    if (Array.isArray(queryString.rarity)) {
+      let rarityString = [];
+      queryString.rarity.forEach(element => {
+        rarityString.push("rarity.name = ?");
+        queryValues.push(stringToCapitalize(element));
+      });
+      arrayConditions.push(`(${rarityString.join(" or ")})`);
+    } else {
+      arrayConditions.push("rarity.name = ?");
+      queryValues.push(stringToCapitalize(queryString.rarity));
+    }
   }
 
-  if (body.hasOwnProperty('opus_id') && body.opus_id.length > 0) {
-    let opus_idString = [];
-    body.opus_id.forEach(element => {
-      opus_idString.push("card.opus_id = UUID_TO_BIN(?)");
-      queryValues.push(element);
-    });
-    arrayConditions.push(`(${opus_idString.join(" or ")})`);
+  if (queryString.hasOwnProperty('opus')) {
+    arrayJoins.push("join opus on card.opus_id = opus.id");
+    if (Array.isArray(queryString.opus)) {
+      let opusString = [];
+      queryString.opus.forEach(element => {
+        opusString.push("opus.opus_code = ?");
+        queryValues.push(element);
+      });
+      arrayConditions.push(`(${opusString.join(" or ")})`);
+    } else {
+      arrayConditions.push("opus.opus_code = ?");
+      queryValues.push(queryString.opus);
+    }
   }
 
-  if (body.hasOwnProperty('card_type_id') && body.card_type_id.length > 0) {
-    let card_type_idString = [];
-    body.card_type_id.forEach(element => {
-      card_type_idString.push("card.card_type_id = UUID_TO_BIN(?)");
-      queryValues.push(element);
-    });
-    arrayConditions.push(`(${card_type_idString.join(" or ")})`);
+  if (queryString.hasOwnProperty('card_type')) {
+    arrayJoins.push("join card_type on card.card_type_id = card_type.id");
+    if (Array.isArray(queryString.card_type)) {
+      let card_typeString = [];
+      queryString.card_type.forEach(element => {
+        card_typeString.push("card_type.name = ?");
+        queryValues.push(stringToCapitalize(element));
+      });
+      arrayConditions.push(`(${card_typeString.join(" or ")})`);
+    } else {
+      arrayConditions.push("card_type.name = ?");
+      queryValues.push(stringToCapitalize(queryString.card_type));
+    }
   }
 
-  // conditions that joins are required
-
-  if (body.hasOwnProperty('element_id') && body.element_id.length > 0) {
-    let element_idString = [];
-    body.element_id.forEach(element => {
-      element_idString.push("card_element.element_id = UUID_TO_BIN(?)");
-      queryValues.push(element);
-    });
-    arrayConditions.push(`(${element_idString.join(" or ")})`);
-    arrayJoins.push("join card_element on card.id = card_element.card_id");
+  if (queryString.hasOwnProperty('element')) {
+    arrayJoins.push("join card_element on card.id = card_element.card_id join element on card_element.element_id = element.id");
+    if (Array.isArray(queryString.element)) {
+      let elementString = [];
+      queryString.element.forEach(element => {
+        elementString.push("element.name = ?");
+        queryValues.push(stringToCapitalize(qelement));
+      });
+      arrayConditions.push(`(${elementString.join(" or ")})`);
+    } else {
+      arrayConditions.push("element.name = ?");
+      queryValues.push(stringToCapitalize(queryString.element));
+    }
   }
 
-  if (body.hasOwnProperty('job_id') && body.job_id.length > 0) {
-    let job_idString = [];
-    body.job_id.forEach(element => {
-      job_idString.push("card_job.job_id = UUID_TO_BIN(?)");
-      queryValues.push(element);
-    });
-    arrayConditions.push(`(${job_idString.join(" or ")})`);
-    arrayJoins.push("join card_job on card.id = card_job.card_id");
+  if (queryString.hasOwnProperty('category')) {
+    arrayJoins.push("join card_category on card.id = card_category.card_id join category on card_category.category_id = category.id");
+    if (Array.isArray(queryString.category)) {
+      let categoryString = [];
+      queryString.category.forEach(element => {
+        categoryString.push("category.name = ?");
+        queryValues.push(element);
+      });
+      arrayConditions.push(`(${categoryString.join(" or ")})`);
+    } else {
+      arrayConditions.push("category.name = ?");
+      queryValues.push(queryString.category);
+    }
   }
 
-  if (body.hasOwnProperty('category_id') && body.category_id.length > 0) {
-    let category_idString = [];
-    body.category_id.forEach(element => {
-      category_idString.push("card_category.category_id = UUID_TO_BIN(?)");
-      queryValues.push(element);
-    });
-    arrayConditions.push(`(${category_idString.join(" or ")})`);
-    arrayJoins.push("join card_category on card.id = card_category.card_id");
+  if (queryString.hasOwnProperty('job')) {
+    arrayJoins.push("join card_job on card.id = card_job.card_id join job on card_job.job_id = job.id");
+    if (Array.isArray(queryString.job)) {
+      let jobString = [];
+      queryString.job.forEach(element => {
+        jobString.push("job.name = ?");
+        queryValues.push(element);
+      });
+      arrayConditions.push(`(${jobString.join(" or ")})`);
+    } else {
+      arrayConditions.push("job.name = ?");
+      queryValues.push(queryString.job);
+    }
   }
 
   // preparing statement
 
   if (arrayConditions.length > 0) {
     const whereString = `where ${arrayConditions.join(" and ")} `;
-    console.log("whereString :" + whereString);
-    console.log("queryValues :" + queryValues);
     cardQuery = cardQuery.replace("$whereString$", whereString);
   } else
     cardQuery = cardQuery.replace("$whereString$", "");
 
   if (arrayJoins.length > 0) {
     const joinString = `${arrayJoins.join(" ")} `;
-    console.log("joinString :" + joinString);
     cardQuery = cardQuery.replace("$joinString$", joinString);
   } else
     cardQuery = cardQuery.replace("$joinString$", "");
 
+  // query to know how many row are
+  let countQuery = cardQuery.replace('limit ?', "").replace('offset ?', "").replace("card.name, code, src", "count(code) as 'count'");
+
   queryValues.push(itemLimit, offset)
 
-  console.log("cardQuery :" + cardQuery);
-  console.log("queryValues :" + queryValues);
+  //console.log("cardQuery :" + cardQuery);
+  //console.log("queryValues :" + queryValues);
 
   let cardResult;
   try {
     [cardResult] = await pool.query(cardQuery, queryValues);
+    [countResult] = await pool.query(countQuery, queryValues);
   } catch (error) {
     console.log(error);
     throw { message: `connection.js -> getCard -> cardQuery: ${error}` }
   }
 
   cardResult.map(card => {
-    card.src = `${process.env.LOCAL_PATH}${card.src}`;
-    card.link = `${process.env.LOCAL_PATH}api/v1/card/${card.code}`
+    card.src = `${process.env.LOCAL_PATH}/${card.src}`;
+    card.link = `${process.env.LOCAL_PATH}/api/v1/card/${card.code}`
   });
 
-  return cardResult;
+  result.totalElements = countResult[0].count;
+  result.showing = cardResult.length;
+  result.totalPage = Math.trunc(countResult[0].count/itemLimit) + 1;
+  result.currentPage = currentPage;
+  result.previous = currentPage - 1 <= 0 ? null : `${process.env.LOCAL_PATH}${url.replace(`page=${queryString.page}`, `page=${currentPage - 1}`)}`;
+  result.next = currentPage < result.totalPage ? `${process.env.LOCAL_PATH}${url.replace(`page=${queryString.page}`, `page=${currentPage + 1}`)}` : null;
+  result.cards = cardResult;
+
+  return result;
 };
 
 const editCard = async (body) => {

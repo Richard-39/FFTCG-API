@@ -2,7 +2,7 @@
 select BIN_TO_UUID(rarity.id) as "id", name from rarity;
 
 -- Opus --
-select BIN_TO_UUID(opus.id) as "id", name from opus;
+select BIN_TO_UUID(opus.id) as "id", name, opus_code from opus;
 
 -- Card Type --
 select BIN_TO_UUID(card_type.id) as "id", name from card_type;
@@ -112,3 +112,23 @@ offset 0
 
 SELECT code from card order by rand() limit 1;
 select id from image_type where name = 'Regular';
+
+select distinct card.name, code, src 
+from card 
+join 
+	(
+		select card_id, src from image
+		where image.image_type_id = (select id from image_type where name = 'Regular')
+    ) as subImage 
+    on subImage.card_id = card.id
+join card_element on card.id = card_element.card_id
+join card_job on card.id = card_job.card_id
+join card_category on card.id = card_category.card_id
+
+join card_type on card.card_type_id = card_type.id
+where card_type.name = 'Monster'
+
+order by code asc	
+limit 10
+offset 0
+;

@@ -9,7 +9,8 @@ create table rarity
 create table opus
 (
 	id binary(16) primary key,
-    name varchar(100) not null unique
+    name varchar(100) not null unique,
+    opus_code int
 );
 
 create table card_type
