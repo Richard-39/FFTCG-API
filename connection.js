@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
 const { v4: uuidv4 } = require('uuid');
-const { dateFormat } = require('./extension.js');
-const {constants} = require('./constants.js');
+const { dateFormat, clamp, getOperator } = require('./extension.js');
+const { constants } = require('./constants.js');
 
 const fs = require('fs');
 const { type } = require('os');
@@ -160,59 +160,161 @@ const getRandomCard = async () => {
   }
 };
 
-const getCard = async({ limit = 10, page = 1, exburst}) => {
+const getCard = async (body) => {
 
-  /*
-  
-  let columCardNameArray = ["name", "code", "rarity_id", "opus_id", "cost", "card_type_id", "exburst", "multiplayable", "power", "abilities"];
-  let cardKeyArray = [];
-  let cardValueArray = [];
+  let itemLimit, offset;
+  let arrayJoins = [];
+  let arrayConditions = [];
+  let queryValues = [];
 
-  for (const [key, value] of Object.entries(body)) {
+  let cardQuery = "select distinct card.name, code, src from card " +
+    "join (select card_id, src from image where image.image_type_id = (select id from image_type where name = 'Regular')) as subImage " +
+    "on subImage.card_id = card.id " +
+    "$joinString$" +
+    "$whereString$" +
+    "order by code asc " +
+    "limit ? " +
+    "offset ?; ";
 
-    if (columCardNameArray.includes(key)) {
-      let columToSet = key;
-      if (key.endsWith("id"))
-        columToSet += " = UUID_TO_BIN(?)";
-      else
-        columToSet += " = ?";
-
-      cardKeyArray.push(columToSet);
-      cardValueArray.push(value);
-    }
-  }
-
-  if (cardKeyArray.length > 0) {
-    cardValueArray.push(body.id);
-    const columCardString = cardKeyArray.join(", ");
-    const initialCardString = 'update card set $ where id = UUID_TO_BIN(?);';
-    const cardQuery = initialCardString.replace("$", columCardString);
-    try {
-      await pool.query(cardQuery, cardValueArray);
-    } catch (error) {
-      console.log(error);
-      throw { message: `connection.js -> editCard -> cardQuery: ${error}` }
-    }
-  }
-
-  */
-
-  if (exburst)
-    console.log("con exburst")
+  if (body.hasOwnProperty('limit'))
+    itemLimit = Number.isNaN(parseInt(body.limit)) ? 10 : Math.trunc(Math.abs(body.limit)); // check if the limit value is not a NaN
   else
-    console.log("asi no mas");
+    itemLimit = 10
+
+  if (body.hasOwnProperty('page'))
+    offset = Number.isNaN(parseInt(body.page)) ? 0 : Math.trunc(clamp(body.page - 1, 0, Number.MAX_SAFE_INTEGER)) * itemLimit; // check if the page value is not a NaN
+  else
+    offset = 0;
+
+  // where conditions
+
+  if (body.hasOwnProperty('exburst')) {
+    arrayConditions.push("card.exburst = ?");
+    queryValues.push(body.exburst);
+  }
+
+  if (body.hasOwnProperty('multiplayable')) {
+    arrayConditions.push("card.multiplayable = ?");
+    queryValues.push(body.multiplayable);
+  }
+
+  if (body.hasOwnProperty('power'))
+    if (body.power.values.length == 1) {
+      arrayConditions.push(`card.power ${getOperator(body.power.operator)} ?`);
+      queryValues.push(body.power.values[0]);
+    }
+
+    else if (body.power.values.length == 2) {
+      arrayConditions.push("card.power BETWEEN ? AND ?");
+      queryValues.push(Math.min(body.power.values[0], body.power.values[1]), Math.max(body.power.values[0], body.power.values[1]));
+    }
+
+  if (body.hasOwnProperty('abilities')) {
+    arrayConditions.push(`card.abilities like ?`);
+    queryValues.push(`%${body.abilities}%`);
+  }
+
+  if (body.hasOwnProperty('cost') && body.cost.length > 0) {
+    let costString = [];
+    body.cost.forEach(element => {
+      costString.push("card.cost = ?");
+      queryValues.push(element);
+    });
+    arrayConditions.push(`(${costString.join(" or ")})`);
+  }
+
+  if (body.hasOwnProperty('name')) {
+    arrayConditions.push(`card.name like ?`);
+    queryValues.push(`%${body.name}%`);
+  }
+
+  if (body.hasOwnProperty('rarity_id') && body.rarity_id.length > 0) {
+    let rarity_idString = [];
+    body.rarity_id.forEach(element => {
+      rarity_idString.push("card.rarity_id = UUID_TO_BIN(?)");
+      queryValues.push(element);
+    });
+    arrayConditions.push(`(${rarity_idString.join(" or ")})`);
+  }
+
+  if (body.hasOwnProperty('opus_id') && body.opus_id.length > 0) {
+    let opus_idString = [];
+    body.opus_id.forEach(element => {
+      opus_idString.push("card.opus_id = UUID_TO_BIN(?)");
+      queryValues.push(element);
+    });
+    arrayConditions.push(`(${opus_idString.join(" or ")})`);
+  }
+
+  if (body.hasOwnProperty('card_type_id') && body.card_type_id.length > 0) {
+    let card_type_idString = [];
+    body.card_type_id.forEach(element => {
+      card_type_idString.push("card.card_type_id = UUID_TO_BIN(?)");
+      queryValues.push(element);
+    });
+    arrayConditions.push(`(${card_type_idString.join(" or ")})`);
+  }
+
+  // conditions that joins are required
+
+  if (body.hasOwnProperty('element_id') && body.element_id.length > 0) {
+    let element_idString = [];
+    body.element_id.forEach(element => {
+      element_idString.push("card_element.element_id = UUID_TO_BIN(?)");
+      queryValues.push(element);
+    });
+    arrayConditions.push(`(${element_idString.join(" or ")})`);
+    arrayJoins.push("join card_element on card.id = card_element.card_id");
+  }
+
+  if (body.hasOwnProperty('job_id') && body.job_id.length > 0) {
+    let job_idString = [];
+    body.job_id.forEach(element => {
+      job_idString.push("card_job.job_id = UUID_TO_BIN(?)");
+      queryValues.push(element);
+    });
+    arrayConditions.push(`(${job_idString.join(" or ")})`);
+    arrayJoins.push("join card_job on card.id = card_job.card_id");
+  }
+
+  if (body.hasOwnProperty('category_id') && body.category_id.length > 0) {
+    let category_idString = [];
+    body.category_id.forEach(element => {
+      category_idString.push("card_category.category_id = UUID_TO_BIN(?)");
+      queryValues.push(element);
+    });
+    arrayConditions.push(`(${category_idString.join(" or ")})`);
+    arrayJoins.push("join card_category on card.id = card_category.card_id");
+  }
+
+  // preparing statement
+
+  if (arrayConditions.length > 0) {
+    const whereString = `where ${arrayConditions.join(" and ")} `;
+    console.log("whereString :" + whereString);
+    console.log("queryValues :" + queryValues);
+    cardQuery = cardQuery.replace("$whereString$", whereString);
+  } else
+    cardQuery = cardQuery.replace("$whereString$", "");
+
+  if (arrayJoins.length > 0) {
+    const joinString = `${arrayJoins.join(" ")} `;
+    console.log("joinString :" + joinString);
+    cardQuery = cardQuery.replace("$joinString$", joinString);
+  } else
+    cardQuery = cardQuery.replace("$joinString$", "");
+
+  queryValues.push(itemLimit, offset)
+
+  console.log("cardQuery :" + cardQuery);
+  console.log("queryValues :" + queryValues);
 
   let cardResult;
-  const itemLimit = Number.isNaN(parseInt(limit)) ? 10 : Math.trunc(Math.abs(limit)); // check if the limit value is not a NaN
-  const offset = Number.isNaN(parseInt(page)) ? 1 : Math.trunc(Math.abs(page)) - 1; // check if the page value is not a NaN
-  const cardQuery = "select card.name, code, src from card join (select card_id, image_type.name, src from image join image_type on image.image_type_id = image_type.id where image_type.name = 'Regular') as subImage on subImage.card_id = card.id order by code asc limit ? offset ?;";
-  const cardValue = [itemLimit, offset];
-
   try {
-    [cardResult] = await pool.query(cardQuery, cardValue);
+    [cardResult] = await pool.query(cardQuery, queryValues);
   } catch (error) {
     console.log(error);
-    throw {message: `connection.js -> getCard -> cardQuery: ${error}`}
+    throw { message: `connection.js -> getCard -> cardQuery: ${error}` }
   }
 
   cardResult.map(card => {

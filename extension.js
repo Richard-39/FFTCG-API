@@ -1,6 +1,5 @@
-const dateFormat = (date)=>
-{
-    var parts = new Intl.DateTimeFormat('en-GB', 
+const dateFormat = (date) => {
+    var parts = new Intl.DateTimeFormat('en-GB',
         {
             year: "numeric",
             month: "2-digit",
@@ -11,10 +10,33 @@ const dateFormat = (date)=>
             hourCycle: "h23",
             timeZone: 'America/Santiago'
         })
-    .formatToParts(date);
+        .formatToParts(date);
 
-    var formatedDate = `${parts.find(p=> p.type == "year").value}-${parts.find(p=> p.type == "month").value}-${parts.find(p=> p.type == "day").value} ${parts.find(p=> p.type == "hour").value}:${parts.find(p=> p.type == "minute").value}:${parts.find(p=> p.type == "second").value}`;
+    var formatedDate = `${parts.find(p => p.type == "year").value}-${parts.find(p => p.type == "month").value}-${parts.find(p => p.type == "day").value} ${parts.find(p => p.type == "hour").value}:${parts.find(p => p.type == "minute").value}:${parts.find(p => p.type == "second").value}`;
     return formatedDate;
 };
 
-module.exports = { dateFormat }
+//Returns a number whose value is limited to the given range.
+const clamp = (value, min, max) => {
+    return Math.min(Math.max(value, min), max);
+};
+
+const getOperator = (string) => {
+    switch (string){
+        case ">":
+            return '>';
+        case "<":
+            return '<';
+        case "=":
+            return '=';
+        case ">=":
+            return '>=';
+        case "<=":
+            return '<=';
+        default:
+            return '=';
+    }
+};
+
+
+module.exports = { dateFormat, clamp, getOperator }

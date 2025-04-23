@@ -74,9 +74,41 @@ join
 	where image_type.name = "Regular") as subImage 
 on subImage.card_id = card.id;
 
-select card_id, image_type.name, src from image
+select card_id, src from image
 join image_type on image.image_type_id = image_type.id
 where image_type.name = "Regular";
 
+select distinct card.name, code, src 
+from card 
+join 
+	(
+		select card_id, src from image
+		where image.image_type_id = (select id from image_type where name = 'Regular')
+    ) as subImage 
+    on subImage.card_id = card.id
+join card_element on card.id = card_element.card_id
+join card_job on card.id = card_job.card_id
+join card_category on card.id = card_category.card_id
+
+where card.rarity_id = UUID_TO_BIN('8643860e-0e7c-11f0-abac-309c2314b3fd')
+and card.opus_id = UUID_TO_BIN('8646f14a-0e7c-11f0-abac-309c2314b3fd')
+and card.card_type_id = UUID_TO_BIN('8649c8eb-0e7c-11f0-abac-309c2314b3fd')
+
+and card_element.element_id = UUID_TO_BIN('864c913c-0e7c-11f0-abac-309c2314b3fd')
+and card_job.job_id = UUID_TO_BIN('864f747c-0e7c-11f0-abac-309c2314b3fd')
+and card_category.category_id = UUID_TO_BIN('8652a006-0e7c-11f0-abac-309c2314b3fd')
+
+and card.name like '%a%'
+and card.cost = 2
+and card.exburst = false
+and card.multiplayable = true
+and card.power <= 9000
+and card.abilities like '%discard%'
+
+order by code asc	
+limit 4
+offset 0
+;
 
 SELECT code from card order by rand() limit 1;
+select id from image_type where name = 'Regular';
