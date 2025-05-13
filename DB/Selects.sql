@@ -113,7 +113,7 @@ offset 0
 SELECT code from card order by rand() limit 1;
 select id from image_type where name = 'Regular';
 
-select distinct card.name, code, src 
+select distinct count(code) 
 from card 
 join 
 	(
@@ -121,14 +121,10 @@ join
 		where image.image_type_id = (select id from image_type where name = 'Regular')
     ) as subImage 
     on subImage.card_id = card.id
-join card_element on card.id = card_element.card_id
-join card_job on card.id = card_job.card_id
-join card_category on card.id = card_category.card_id
-
-join card_type on card.card_type_id = card_type.id
-where card_type.name = 'Monster'
-
 order by code asc	
 limit 10
 offset 0
 ;
+
+select BIN_TO_UUID(id), email, password from user;
+select password from user where email = "ricardo@email.com";

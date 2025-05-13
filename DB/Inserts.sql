@@ -227,6 +227,8 @@ false,
 '2025-01-26 00:15:12'
 );
 
+insert into user (id, email, password) values (UUID_TO_BIN(UUID()), "ricardo@email.com", "123");
+
 -- update image set src = "image/card/c8b1a390-5b7a-42c2-9af5-37cace912168_FullArt_1.jpeg" where card_id = (UUID_TO_BIN('c8b1a390-5b7a-42c2-9af5-37cace912168'));
 
 

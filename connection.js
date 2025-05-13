@@ -2,9 +2,8 @@ const mysql = require('mysql2/promise');
 const { v4: uuidv4 } = require('uuid');
 const { dateFormat, clamp, getOperator, stringToCapitalize } = require('./extension.js');
 const { constants } = require('./constants.js');
-
 const fs = require('fs');
-const { type } = require('os');
+const bcrypt = require('bcryptjs')
 
 const pool = mysql.createPool({
   connectionLimit: 5,
@@ -595,5 +594,35 @@ const addArrayOfImage = async (arrayOfImage, card_id) => {
   return { message: "images added" };
 }
 
+const registerUser = async (email, password) => {
+  const encryptedPassword = bcrypt.hashSync(password);
+  const userQuery = 'insert into `user` values (UUID_TO_BIN(?), ?, ?) ;';
+  const userValues = [uuidv4(), email, encryptedPassword]
 
-module.exports = { addCard, editCard, deleteCard, getCardByCode, getRandomCard, getCard, addOpus };
+  try {
+    await pool.query(userQuery, userValues);
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> registerUser: ${error}` }
+  }
+};
+
+const verifyUser = async (email, password) => {
+  const userQuery = "select password from user where email = ? ;";
+  const userValues = [email];
+
+  try {
+    const [result] = await pool.query(userQuery, userValues);  
+    if (result.length <= 0)
+      throw { message: `connection.js -> verifyUser: There is not user with that email or password` }
+
+    if (!bcrypt.compareSync(password, result[0].password))
+      throw { code: 401, message: `connection.js -> verifyUser: Password wrong` }
+
+  } catch (error) {
+    console.log(error);
+    throw { message: `connection.js -> verifyUser: ${error.message}` }
+  }
+};
+
+module.exports = { addCard, editCard, deleteCard, getCardByCode, getRandomCard, getCard, addOpus, registerUser, verifyUser };

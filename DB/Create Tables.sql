@@ -105,3 +105,10 @@ create table image
 );
 
 -- alter table image add foreign key (card_id) references card (id) on delete cascade;
+
+create table user
+(
+	id binary(16) primary key,
+    email varchar(100) unique,
+    password varchar(500)
+);
