@@ -1,10 +1,9 @@
-const pool = require('../connection.js');
+const pool = require('../../connection.js');
 const { v4: uuidv4 } = require('uuid');
-const { dateFormat, clamp, getOperator, stringToCapitalize } = require('../Extensions/formats.js');
+const { dateFormat, clamp, getOperator, stringToCapitalize } = require('../../Extensions/formats.js');
 const { constants } = require('./constants.js');
 const fs = require('fs');
-const bcrypt = require('bcryptjs');
-const { validateToken } = require('../Extensions/jwt.js');
+const { validateToken } = require('../../Extensions/jwt.js');
 
 const addCard = async (req, res) => {
     try {

@@ -1,4 +1,4 @@
 export const constants = {};
-constants.imagePath = "image/card/";
+constants.imagePath = "Image/Card/";
 
 export default constants;

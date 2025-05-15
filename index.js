@@ -3,8 +3,9 @@ const app = express();
 const cors = require('cors');
 var path = require('path');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
-const cardRoutes = require('./Routers/cardRoutes.js');
+const cardRoutes = require('./Controllers/Card/cardRoutes.js');
 
 app.listen(3000, console.log("Server up on port 3000"));
 

@@ -15,8 +15,10 @@ const { v4: uuidv4 } = require('uuid');
 const { dateFormat, clamp, getOperator, stringToCapitalize } = require('./extension.js');
 const { constants } = require('./constants.js');
 const fs = require('fs');
-const bcrypt = require('bcryptjs')
+
 */
+
+const bcrypt = require('bcryptjs')
 
 const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images) => {
 
