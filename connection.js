@@ -1,10 +1,4 @@
 const mysql = require('mysql2/promise');
-const { v4: uuidv4 } = require('uuid');
-const { dateFormat, clamp, getOperator, stringToCapitalize } = require('./extension.js');
-const { constants } = require('./constants.js');
-const fs = require('fs');
-const bcrypt = require('bcryptjs')
-
 const pool = mysql.createPool({
   connectionLimit: 5,
   host: process.env.DB_HOST,
@@ -15,6 +9,14 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT,
   queueLimit: 0
 });
+
+/*
+const { v4: uuidv4 } = require('uuid');
+const { dateFormat, clamp, getOperator, stringToCapitalize } = require('./extension.js');
+const { constants } = require('./constants.js');
+const fs = require('fs');
+const bcrypt = require('bcryptjs')
+*/
 
 const addCard = async (name, code, rarity_id, opus_id, cost, card_type_id, exburst, multiplayable, power, abilities, elements_id, jobs_id, categories_id, images) => {
 
@@ -625,4 +627,4 @@ const verifyUser = async (email, password) => {
   }
 };
 
-module.exports = { addCard, editCard, deleteCard, getCardByCode, getRandomCard, getCard, addOpus, registerUser, verifyUser };
+module.exports = pool;
