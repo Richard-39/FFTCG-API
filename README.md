@@ -25,3 +25,10 @@ git clone https://github.com/tuusuario/fftcg-api.git
 cd fftcg-api
 npm install
 npm run dev
+
+
+/*init with enviroments values*/
+node --env-file-if-exists=.env index.js
+
+/*init with local enviroments values*/
+node --env-file-if-exists=.env.development.local index.js

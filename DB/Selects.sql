@@ -41,23 +41,14 @@ select BIN_TO_UUID(card_category.card_id), card.code as 'code', category.name as
 join card on card_category.card_id = card.id
 join category on card_category.category_id = category.id;
 
+-- Image --
 select BIN_TO_UUID(card_id), src from image;
 select src from image where card_id = UUID_TO_BIN('c1cd682c-3cdc-4b1a-b40e-2eebd8b73c41');
 
+-- Select random card --
 SELECT * FROM card
 ORDER BY RAND()
 LIMIT 1;
-
--- export to sql insert
-select concat("UUID_TO_BIN('", BIN_TO_UUID(card.id), "'") as 'id', name, code, concat("UUID_TO_BIN('", BIN_TO_UUID(rarity_id), "'") as 'rarity_id', concat("UUID_TO_BIN('", BIN_TO_UUID(opus_id), "'") as 'opus_id', cost, concat("UUID_TO_BIN('", BIN_TO_UUID(card_type_id), "'") as 'cardType_id', exburst, multiplayable, power, abilities, create_at, update_at
-from card;
-
-SHOW VARIABLES LIKE 'max_connections';
-SHOW STATUS WHERE `variable_name` = 'Threads_connected';
-
-select 1;
-
-do sleep(5);
 
 -- card by code --
 SELECT BIN_TO_UUID(card.id) as `id`, card.name, code, rarity.name as `rarity`, opus.name as `opus`, cost, card_type.name as `card type`, exburst, multiplayable, power, abilities, create_at, update_at 
@@ -74,10 +65,12 @@ join
 	where image_type.name = "Regular") as subImage 
 on subImage.card_id = card.id;
 
+-- Regular Images
 select card_id, src from image
 join image_type on image.image_type_id = image_type.id
 where image_type.name = "Regular";
 
+-- select card with filters --
 select distinct card.name, code, src 
 from card 
 join 
@@ -110,9 +103,11 @@ limit 4
 offset 0
 ;
 
+-- select random card by code --
 SELECT code from card order by rand() limit 1;
 select id from image_type where name = 'Regular';
 
+-- getting total of element from query
 select distinct count(code) 
 from card 
 join 
@@ -120,11 +115,19 @@ join
 		select card_id, src from image
 		where image.image_type_id = (select id from image_type where name = 'Regular')
     ) as subImage 
-    on subImage.card_id = card.id
-order by code asc	
-limit 10
-offset 0
-;
+    on subImage.card_id = card.id;
 
+-- user select --
 select BIN_TO_UUID(id), email, password from user;
 select password from user where email = "ricardo@email.com";
+
+-- export to sql insert
+select concat("UUID_TO_BIN('", BIN_TO_UUID(card.id), "'") as 'id', name, code, concat("UUID_TO_BIN('", BIN_TO_UUID(rarity_id), "'") as 'rarity_id', concat("UUID_TO_BIN('", BIN_TO_UUID(opus_id), "'") as 'opus_id', cost, concat("UUID_TO_BIN('", BIN_TO_UUID(card_type_id), "'") as 'cardType_id', exburst, multiplayable, power, abilities, create_at, update_at
+from card;
+
+-- other selects
+SHOW VARIABLES LIKE 'max_connections';
+SHOW STATUS WHERE `variable_name` = 'Threads_connected';
+
+select 1;
+do sleep(5);

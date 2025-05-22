@@ -1,7 +1,7 @@
 const pool = require('../../connection.js');
 const { v4: uuidv4 } = require('uuid');
 const { dateFormat, clamp, getOperator, stringToCapitalize } = require('../../Extensions/formats.js');
-const { constants } = require('./constants.js');
+const { constants } = require('../../constants.js');
 const fs = require('fs');
 const { validateToken } = require('../../Extensions/jwt.js');
 
@@ -318,7 +318,7 @@ const getCardByCode = async (req, res) => {
         Card.categories = categoryResult.map(c => c.name);
         Card.ilustrations = imageResult.map(i => {
             const obj = Object.assign({}, i);
-            obj.src = process.env.LOCAL_PATH + "/" + i.src;
+            obj.src = constants.imageURL + i.src;
             return obj;
         });
 
@@ -533,7 +533,7 @@ const getCard = async (req, res) => {
         }
 
         cardResult.map(card => {
-            card.src = `${process.env.LOCAL_PATH}/${card.src}`;
+            card.src = constants.imageURL + card.src;
             card.link = `${process.env.LOCAL_PATH}/api/v1/card/${card.code}`
         });
 
