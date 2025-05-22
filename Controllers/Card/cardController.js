@@ -69,7 +69,7 @@ const addCard = async (req, res) => {
         res.send("Card Added !");
     } catch (error) {
         console.log(error);
-        res.status(error.code || 500).send(`cardController.js -> addCard -> ${error}`);
+        res.status(error.code || 500).send(`cardController.js -> addCard -> ${error.message}`);
     }
 };
 
@@ -210,7 +210,7 @@ const editCard = async (req, res) => {
         res.send("Card edited !");
     } catch (error) {
         console.log(error);
-        res.status(error.code || 500).send(`cardController.js -> editCard -> ${error}`);
+        res.status(error.code || 500).send(`cardController.js -> editCard -> ${error.message}`);
     }
 };
 
@@ -237,7 +237,7 @@ const deleteCard = async (req, res) => {
         res.send("Card deleted");
     } catch (error) {
         console.log(error);
-        res.status(error.code || 500).send(`cardController.js -> deleteCard -> ${error}`);
+        res.status(error.code || 500).send(`cardController.js -> deleteCard -> ${error.message}`);
     }
 };
 
@@ -251,16 +251,11 @@ const getRandomCard = async (req, res) => {
             throw { message: `codeQuery: ${error}` }
         }
 
-        try {
-            const card = await getCardByCode(codeResult[0].code);
-            res.json(card);
-        } catch (error) {
-            throw error;
-        }
-
+        res.redirect(`${process.env.LOCAL_PATH}/api/v1/card/${codeResult[0].code}`);
+        
     } catch (error) {
         console.log(error);
-        res.status(error.code || 500).send(`cardController.js -> getRandomCard -> ${error}`);
+        res.status(error.code || 500).send(`cardController.js -> getRandomCard -> ${error.message}`);
     }
 };
 
@@ -325,7 +320,7 @@ const getCardByCode = async (req, res) => {
         res.json(Card);
     } catch (error) {
         console.log(error);
-        res.status(error.code || 500).send(`cardController.js -> getCardByCode -> ${error}`);
+        res.status(error.code || 500).send(`cardController.js -> getCardByCode -> ${error.message}`);
     }
 };
 
@@ -547,7 +542,8 @@ const getCard = async (req, res) => {
 
         res.json(result);
     } catch (error) {
-        res.status(500).send(error.message);
+        console.log(error);
+        res.status(error.code || 500).send(`cardController.js -> getCard -> ${error.message}`);
     }
 };
 

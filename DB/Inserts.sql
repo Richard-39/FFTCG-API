@@ -1,4 +1,4 @@
--- Basic insert, for new db and data --
+-- Basic insert, for new db and data - NOT INCLUDE CARD AND SUB TABLES DATA, If you want full data, use restore insert instead-
 
 insert into rarity (id, name) values 
 (UUID_TO_BIN(UUID()), 'Legend'),

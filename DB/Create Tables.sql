@@ -10,7 +10,7 @@ create table opus
 (
 	id binary(16) primary key,
     name varchar(100) not null unique,
-    opus_code int
+    opus_code varchar(4)
 );
 
 create table card_type
@@ -104,7 +104,7 @@ create table image
     src mediumtext
 );
 
--- alter table image add foreign key (card_id) references card (id) on delete cascade;
+-- user section
 
 create table user
 (

@@ -1,0 +1,18 @@
+// you can add any property of card to edit. If you need change only one property, just add only this and no other one.
+
+{
+  "id":"edd1cb90-a7f3-4ed8-baa6-28a7e5f56d96", // required
+  "name":"AVALANCHE Member", 
+  "code":"25-003C",
+  "rarity_id":"8643a019-0e7c-11f0-abac-309c2314b3fd", 
+  "opus_id":"7302f468-36cb-11f0-aee6-309c2314b3fd", 
+  "cost":2, 
+  "card_type_id":"8649c8eb-0e7c-11f0-abac-309c2314b3fd", 
+  "exburst":false, 
+  "multiplayable":true, 
+  "power":5000, 
+  "abilities":"When AVALANCHE Member enters the field, you may discard 1 Category VII Character. When you do so, choose 1 Forward. Deal it 7000 damage.",
+  "elements_id":"864c913c-0e7c-11f0-abac-309c2314b3fd",
+  "jobs_id":{"array":["864f739b-0e7c-11f0-abac-309c2314b3fd"]},
+  "categories_id":"8652a006-0e7c-11f0-abac-309c2314b3fd"
+}
